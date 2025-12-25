@@ -1,18 +1,18 @@
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.control.*?>
+<?xml version="1.0" encoding="UTF-8"?>
 
-<VBox spacing="15"
-      xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.echchhit.habittracker.controller.HabitsController">
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.geometry.Insets?>
 
-    <Label text="Your Habits"/>
+<GridPane xmlns:fx="http://javafx.com/fxml"
+          fx:controller="com.echchhit.habittracker.controller.HabitsController"
+          fx:id="habitGrid"
+          hgap="6"
+          vgap="6"
+          styleClass="content-area">
 
-    <HBox spacing="10">
-        <TextField fx:id="habitInput" promptText="Enter habit"/>
-        <Button text="Add" onAction="#addHabit"/>
-    </HBox>
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
 
-    <ListView fx:id="habitList"/>
-
-</VBox>
-
+</GridPane>
