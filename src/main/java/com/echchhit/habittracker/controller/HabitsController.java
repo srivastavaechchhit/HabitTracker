@@ -19,6 +19,9 @@ public class HabitsController {
     @FXML
     private GridPane habitGrid;
 
+    @FXML
+    private javafx.scene.control.ComboBox<java.time.YearMonth> monthSelector;
+
     private final Map<Integer, Integer> habitRowMap = new HashMap<>();
 
     // TEMP: habitId mapping (later from DB)
@@ -33,6 +36,15 @@ public class HabitsController {
 
     @FXML
     public void initialize() {
+
+        java.time.YearMonth currentMonth = java.time.YearMonth.now();
+
+        monthSelector.getItems().clear();
+        monthSelector.getItems().add(currentMonth);
+        monthSelector.setValue(currentMonth);
+
+        monthSelector.setOnAction(e -> reloadGridForMonth(monthSelector.getValue()));
+
 
         // TEMP habit IDs
         for (int i = 0; i < habits.length; i++) {
@@ -82,6 +94,35 @@ public class HabitsController {
         habitGrid.getColumnConstraints().add(totalCol);
         habitGrid.add(new Label("TOTAL"), today + 1, 0);
     }
+
+    private void buildDateHeaderForMonth(java.time.YearMonth month) {
+
+        int days =
+                month.equals(java.time.YearMonth.now())
+                        ? java.time.LocalDate.now().getDayOfMonth()
+                        : month.lengthOfMonth();
+
+        ColumnConstraints habitCol = new ColumnConstraints();
+        habitCol.setPercentWidth(20);
+        habitGrid.getColumnConstraints().add(habitCol);
+        habitGrid.add(new Label("HABITS"), 0, 0);
+
+        double datePercent = 70.0 / days;
+
+        for (int day = 1; day <= days; day++) {
+            ColumnConstraints cc = new ColumnConstraints();
+            cc.setPercentWidth(datePercent);
+            habitGrid.getColumnConstraints().add(cc);
+
+            habitGrid.add(new Label(String.valueOf(day)), day, 0);
+        }
+
+        ColumnConstraints totalCol = new ColumnConstraints();
+        totalCol.setPercentWidth(10);
+        habitGrid.getColumnConstraints().add(totalCol);
+        habitGrid.add(new Label("TOTAL"), days + 1, 0);
+    }
+
 
     /* =====================================================
        HABIT ROWS
@@ -133,6 +174,77 @@ public class HabitsController {
             habitGrid.add(rowTotal, today + 1, row);
         }
     }
+
+    private void addHabitRowsForMonth(java.time.YearMonth month) {
+
+        int days =
+                month.equals(java.time.YearMonth.now())
+                        ? java.time.LocalDate.now().getDayOfMonth()
+                        : month.lengthOfMonth();
+
+        for (int i = 0; i < habits.length; i++) {
+
+            String habit = habits[i];
+            int habitId = habitIdMap.get(habit);
+            int row = i + 1;
+
+            habitGrid.add(new Label(habit), 0, row);
+
+            var completed =
+                    HabitLogService.getCompletedDatesForMonth(habitId, month);
+
+            for (int day = 1; day <= days; day++) {
+
+                java.time.LocalDate date =
+                        month.atDay(day);
+
+                if (month.equals(java.time.YearMonth.now()) &&
+                        date.equals(java.time.LocalDate.now())) {
+
+                    habitGrid.add(
+                            createTodayBox(habitId, completed.contains(date)),
+                            day,
+                            row
+                    );
+                } else {
+                    habitGrid.add(
+                            createLockedBox(completed.contains(date)),
+                            day,
+                            row
+                    );
+                }
+            }
+
+            habitGrid.add(
+                    new Label(String.valueOf(completed.size())),
+                    days + 1,
+                    row
+            );
+        }
+    }
+
+    private void addBottomTotalRowForMonth(java.time.YearMonth month) {
+
+        int days =
+                month.equals(java.time.YearMonth.now())
+                        ? java.time.LocalDate.now().getDayOfMonth()
+                        : month.lengthOfMonth();
+
+        int bottomRow = habits.length + 1;
+
+        habitGrid.add(new Label("TOTAL"), 0, bottomRow);
+
+        int total = 0;
+        for (int day = 1; day <= days; day++) {
+            total += HabitLogService.getCompletedCountByDate(
+                    month.atDay(day)
+            );
+        }
+
+        habitGrid.add(new Label(String.valueOf(total)), days, bottomRow);
+    }
+
+
 
     private int getHabitRow(int habitId) {
         return habitRowMap.getOrDefault(habitId, -1);
@@ -280,4 +392,13 @@ public class HabitsController {
         }
         return null;
     }
+
+    private void reloadGridForMonth(java.time.YearMonth month) {
+        habitGrid.getChildren().clear();
+        habitGrid.getColumnConstraints().clear();
+        buildDateHeaderForMonth(month);
+        addHabitRowsForMonth(month);
+        addBottomTotalRowForMonth(month);
+    }
+
 }
