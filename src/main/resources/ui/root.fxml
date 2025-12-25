@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.echchhit.habittracker.controller.MainController"
+            stylesheets="@../theme/dark.css">
+
+    <!-- Sidebar -->
+    <left>
+        <VBox prefWidth="220" styleClass="sidebar">
+            <Label text="Habit Tracker" styleClass="sidebar-title"/>
+
+            <Button text="Dashboard" styleClass="sidebar-button" onAction="#loadDashboard"/>
+            <Button text="Habits" styleClass="sidebar-button" onAction="#loadHabits"/>
+            <Button text="Statistics" styleClass="sidebar-button" onAction="#loadStats"/>
+            <Button text="Settings" styleClass="sidebar-button" onAction="#loadSettings"/>
+            <Button text="Calendar" styleClass="sidebar-button" onAction="#loadCalendar"/>
+            <Button text="Charts" styleClass="sidebar-button" onAction="#loadCharts"/>
+
+
+        </VBox>
+    </left>
+
+    <!-- Content area -->
+    <center>
+        <StackPane fx:id="contentPane" styleClass="content-area"/>
+    </center>
+
+</BorderPane>

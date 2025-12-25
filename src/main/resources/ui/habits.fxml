@@ -1,0 +1,18 @@
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox spacing="15"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.echchhit.habittracker.controller.HabitsController">
+
+    <Label text="Your Habits"/>
+
+    <HBox spacing="10">
+        <TextField fx:id="habitInput" promptText="Enter habit"/>
+        <Button text="Add" onAction="#addHabit"/>
+    </HBox>
+
+    <ListView fx:id="habitList"/>
+
+</VBox>
+
