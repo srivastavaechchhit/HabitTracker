@@ -1,5 +1,6 @@
 package com.echchhit.habittracker.controller;
 
+import com.echchhit.habittracker.service.HabitLogService;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -8,21 +9,21 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class HabitsController {
 
     @FXML
     private GridPane habitGrid;
 
-    // Stores TODAY completion state per habit
-    private final Map<String, Boolean> todayState = new HashMap<>();
+    private final Map<Integer, Integer> habitRowMap = new HashMap<>();
 
-    // Row index mapping for habits
-    private final Map<String, Integer> habitRowMap = new HashMap<>();
+    // TEMP: habitId mapping (later from DB)
+    private final Map<String, Integer> habitIdMap = new HashMap<>();
 
-    // Sample habits (temporary; DB later)
     private final String[] habits = {
             "Exercise",
             "Reading",
@@ -32,13 +33,25 @@ public class HabitsController {
 
     @FXML
     public void initialize() {
+
+        // TEMP habit IDs
+        for (int i = 0; i < habits.length; i++) {
+            habitIdMap.put(habits[i], i + 1);
+        }
+
+        // Auto-cross yesterday (ONLY at startup = day rollover)
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        for (int id : habitIdMap.values()) {
+            HabitLogService.autoCrossIfMissed(id, yesterday);
+        }
+
         buildDateHeader();
         addHabitRows();
         addBottomTotalRow();
     }
 
     /* =====================================================
-       HEADER (HABITS | 1 | 2 | ... | TODAY | TOTAL)
+       HEADER
        ===================================================== */
     private void buildDateHeader() {
 
@@ -47,13 +60,11 @@ public class HabitsController {
 
         int today = LocalDate.now().getDayOfMonth();
 
-        // HABITS column (20%)
         ColumnConstraints habitCol = new ColumnConstraints();
         habitCol.setPercentWidth(20);
         habitGrid.getColumnConstraints().add(habitCol);
         habitGrid.add(new Label("HABITS"), 0, 0);
 
-        // DATE columns (70% distributed)
         double datePercent = 70.0 / today;
 
         for (int day = 1; day <= today; day++) {
@@ -66,7 +77,6 @@ public class HabitsController {
             habitGrid.add(lbl, day, 0);
         }
 
-        // TOTAL column (10%)
         ColumnConstraints totalCol = new ColumnConstraints();
         totalCol.setPercentWidth(10);
         habitGrid.getColumnConstraints().add(totalCol);
@@ -74,44 +84,62 @@ public class HabitsController {
     }
 
     /* =====================================================
-       HABIT ROWS + BOXES
+       HABIT ROWS
        ===================================================== */
     private void addHabitRows() {
 
         int today = LocalDate.now().getDayOfMonth();
+        YearMonth month = YearMonth.now();
 
         for (int i = 0; i < habits.length; i++) {
 
             String habit = habits[i];
+            int habitId = habitIdMap.get(habit);
             int row = i + 1;
+            habitRowMap.put(habitId, row);
 
-            habitRowMap.put(habit, row);
-            todayState.put(habit, false);
 
-            // Habit name
             Label habitLabel = new Label(habit);
             habitLabel.setStyle("-fx-font-weight: bold;");
             habitGrid.add(habitLabel, 0, row);
 
-            // Date boxes
+            Set<LocalDate> completedDates =
+                    HabitLogService.getCompletedDatesForMonth(habitId, month);
+
             for (int day = 1; day <= today; day++) {
 
+                LocalDate date = LocalDate.now().withDayOfMonth(day);
+
                 if (day == today) {
-                    habitGrid.add(createTodayBox(habit), day, row);
+                    habitGrid.add(
+                            createTodayBox(habitId, completedDates.contains(date)),
+                            day,
+                            row
+                    );
                 } else {
-                    habitGrid.add(createLockedBox(), day, row);
+                    habitGrid.add(
+                            createLockedBox(completedDates.contains(date)),
+                            day,
+                            row
+                    );
                 }
             }
 
-            // Right-side TOTAL (per habit)
-            Label rowTotal = new Label("0");
+            // RIGHT SIDE TOTAL (days completed this month)
+            Label rowTotal = new Label(
+                    String.valueOf(completedDates.size())
+            );
             rowTotal.setStyle("-fx-font-weight: bold;");
             habitGrid.add(rowTotal, today + 1, row);
         }
     }
 
+    private int getHabitRow(int habitId) {
+        return habitRowMap.getOrDefault(habitId, -1);
+    }
+
     /* =====================================================
-       BOTTOM TOTAL ROW
+       BOTTOM TOTAL
        ===================================================== */
     private void addBottomTotalRow() {
 
@@ -122,31 +150,43 @@ public class HabitsController {
         totalLabel.setStyle("-fx-font-weight: bold;");
         habitGrid.add(totalLabel, 0, bottomRow);
 
-        Label totalValue = new Label("0");
+        Label totalValue = new Label(
+                String.valueOf(HabitLogService.getCompletedCountToday())
+        );
         totalValue.setStyle("-fx-font-weight: bold;");
         habitGrid.add(totalValue, today, bottomRow);
     }
 
     /* =====================================================
-       TODAY BOX (CLICKABLE)
+       TODAY BOX (EDITABLE ALL DAY)
        ===================================================== */
-    private StackPane createTodayBox(String habit) {
+    private StackPane createTodayBox(int habitId, boolean initiallyCompleted) {
 
         StackPane box = createEmptyBox();
 
+        if (initiallyCompleted) {
+            box.getChildren().setAll(new Label("✓"));
+        }
+
         box.setOnMouseClicked(e -> {
 
-            boolean done = todayState.get(habit);
-            todayState.put(habit, !done);
+            boolean isChecked = box.getChildren().stream()
+                    .anyMatch(n -> n instanceof Label);
 
-            if (!done) {
-                box.getChildren().setAll(new Label("✓"));
-            } else {
+            LocalDate today = LocalDate.now();
+
+            if (isChecked) {
+                // UNCHECK → update DB
+                HabitLogService.markMissed(habitId, today);
                 box.getChildren().clear();
+            } else {
+                // CHECK → update DB
+                HabitLogService.markCompleted(habitId);
+                box.getChildren().setAll(new Label("✓"));
             }
 
-            updateRowTotal(habit);
-            updateBottomTotal();
+            refreshTotals();
+            refreshRowTotal(habitId, getHabitRow(habitId));
         });
 
         return box;
@@ -155,21 +195,30 @@ public class HabitsController {
     /* =====================================================
        LOCKED BOX (PAST DAYS)
        ===================================================== */
-    private StackPane createLockedBox() {
+    private StackPane createLockedBox(boolean completed) {
 
         StackPane box = createEmptyBox();
+
+        if (completed) {
+            box.getChildren().setAll(new Label("✓"));
+        } else {
+            Label cross = new Label("✗");
+            cross.setStyle("-fx-text-fill: #888;");
+            box.getChildren().setAll(cross);
+        }
+
+        // NO BLACK BACKGROUND
         box.setStyle("""
-            -fx-border-color: #333;
-            -fx-background-color: #1e1e1e;
+            -fx-border-color: #555;
             -fx-border-radius: 4;
-            -fx-background-radius: 4;
+            -fx-background-color: transparent;
         """);
 
         return box;
     }
 
     /* =====================================================
-       EMPTY SQUARE BOX
+       EMPTY BOX
        ===================================================== */
     private StackPane createEmptyBox() {
 
@@ -182,47 +231,49 @@ public class HabitsController {
             -fx-border-color: #555;
             -fx-border-radius: 4;
             -fx-background-radius: 4;
-            -fx-background-color: transparent;
         """);
 
         return box;
     }
 
     /* =====================================================
-       TOTAL UPDATES
+       TOTAL REFRESH
        ===================================================== */
-    private void updateRowTotal(String habit) {
+    private void refreshTotals() {
 
-        int row = habitRowMap.get(habit);
         int today = LocalDate.now().getDayOfMonth();
-
-        Label label = (Label) getNodeAt(today + 1, row);
-        label.setText(todayState.get(habit) ? "1" : "0");
-    }
-
-    private void updateBottomTotal() {
-
-        int total = 0;
-        for (boolean done : todayState.values()) {
-            if (done) total++;
-        }
-
         int bottomRow = habits.length + 1;
-        int today = LocalDate.now().getDayOfMonth();
 
-        Label label = (Label) getNodeAt(today, bottomRow);
-        label.setText(String.valueOf(total));
+        Label bottom = (Label) getNodeAt(today, bottomRow);
+        if (bottom != null) {
+            bottom.setText(
+                    String.valueOf(HabitLogService.getCompletedCountToday())
+            );
+        }
     }
+
+    private void refreshRowTotal(int habitId, int row) {
+
+        int today = LocalDate.now().getDayOfMonth();
+        YearMonth month = YearMonth.now();
+
+        int completedDays =
+                HabitLogService.getCompletedDatesForMonth(habitId, month).size();
+
+        Label rowTotal = (Label) getNodeAt(today + 1, row);
+        if (rowTotal != null) {
+            rowTotal.setText(String.valueOf(completedDays));
+        }
+    }
+
 
     /* =====================================================
        GRID HELPER
        ===================================================== */
     private Node getNodeAt(int col, int row) {
-
         for (Node node : habitGrid.getChildren()) {
             Integer c = GridPane.getColumnIndex(node);
             Integer r = GridPane.getRowIndex(node);
-
             if (c != null && r != null && c == col && r == row) {
                 return node;
             }

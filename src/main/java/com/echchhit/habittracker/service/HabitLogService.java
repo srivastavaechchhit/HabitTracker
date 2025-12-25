@@ -12,6 +12,11 @@ import java.util.Set;
 
 public class HabitLogService {
 
+    /* =====================================================
+       CORE WRITE OPERATIONS
+       ===================================================== */
+
+    // Mark habit as completed for TODAY
     public static void markCompleted(int habitId) {
         String sql = """
             INSERT INTO habit_logs(habit_id, date, completed)
@@ -32,6 +37,83 @@ public class HabitLogService {
         }
     }
 
+    // Mark habit as MISSED (❌) for a specific date
+    public static void markMissed(int habitId, LocalDate date) {
+        String sql = """
+            INSERT INTO habit_logs(habit_id, date, completed)
+            VALUES (?, ?, 0)
+            ON CONFLICT(habit_id, date)
+            DO UPDATE SET completed = 0
+        """;
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, habitId);
+            ps.setString(2, date.toString());
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /* =====================================================
+       PHASE 5 — DISCIPLINE LOGIC
+       ===================================================== */
+
+    // Auto-cross yesterday if user missed it
+    public static void autoCrossIfMissed(int habitId, LocalDate date) {
+
+        String sql = """
+            SELECT completed FROM habit_logs
+            WHERE habit_id = ? AND date = ?
+        """;
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, habitId);
+            ps.setString(2, date.toString());
+
+            ResultSet rs = ps.executeQuery();
+
+            if (!rs.next()) {
+                // No entry → missed
+                markMissed(habitId, date);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Check if habit was missed TODAY
+    public static boolean missedToday(int habitId) {
+        String sql = """
+            SELECT COUNT(*) FROM habit_logs
+            WHERE habit_id = ? AND date = ? AND completed = 1
+        """;
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, habitId);
+            ps.setString(2, LocalDate.now().toString());
+            ResultSet rs = ps.executeQuery();
+
+            return rs.getInt(1) == 0;
+
+        } catch (Exception e) {
+            return true;
+        }
+    }
+
+    /* =====================================================
+       STREAKS & ANALYTICS
+       ===================================================== */
+
+    // Current streak (consecutive days completed)
     public static int getCurrentStreak(int habitId) {
         String sql = """
             SELECT date FROM habit_logs
@@ -64,6 +146,7 @@ public class HabitLogService {
         return 0;
     }
 
+    // Monthly completion percentage
     public static double getMonthlyCompletionPercent(int habitId, YearMonth month) {
         String sql = """
             SELECT COUNT(*) FROM habit_logs
@@ -90,7 +173,13 @@ public class HabitLogService {
         return 0;
     }
 
+    /* =====================================================
+       CALENDAR & HEATMAP SUPPORT
+       ===================================================== */
+
+    // All completed dates in a month
     public static Set<LocalDate> getCompletedDatesForMonth(int habitId, YearMonth month) {
+
         Set<LocalDate> completed = new HashSet<>();
 
         String sql = """
@@ -118,39 +207,22 @@ public class HabitLogService {
         return completed;
     }
 
+    /* =====================================================
+       DAILY TOTALS (BOTTOM ROW, DASHBOARD)
+       ===================================================== */
 
-    public static boolean missedToday(int habitId) {
-        String sql = """
-        SELECT COUNT(*) FROM habit_logs
-        WHERE habit_id = ? AND date = ? AND completed = 1
-    """;
-
-        try (var conn = DatabaseManager.getConnection();
-             var ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, habitId);
-            ps.setString(2, java.time.LocalDate.now().toString());
-            var rs = ps.executeQuery();
-            return rs.getInt(1) == 0;
-
-        } catch (Exception e) {
-            return true;
-        }
-    }
-
+    // Total habits completed today
     public static int getCompletedCountToday() {
-
         String sql = """
-        SELECT COUNT(*)
-        FROM habit_logs
-        WHERE date = ? AND completed = 1
-    """;
+            SELECT COUNT(*) FROM habit_logs
+            WHERE date = ? AND completed = 1
+        """;
 
-        try (var conn = DatabaseManager.getConnection();
-             var ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, java.time.LocalDate.now().toString());
-            var rs = ps.executeQuery();
+            ps.setString(1, LocalDate.now().toString());
+            ResultSet rs = ps.executeQuery();
             return rs.getInt(1);
 
         } catch (Exception e) {
@@ -158,19 +230,19 @@ public class HabitLogService {
             return 0;
         }
     }
-    public static int getCompletedCountByDate(java.time.LocalDate date) {
 
+    // Total habits completed on a given date
+    public static int getCompletedCountByDate(LocalDate date) {
         String sql = """
-        SELECT COUNT(*)
-        FROM habit_logs
-        WHERE date = ? AND completed = 1
-    """;
+            SELECT COUNT(*) FROM habit_logs
+            WHERE date = ? AND completed = 1
+        """;
 
-        try (var conn = DatabaseManager.getConnection();
-             var ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, date.toString());
-            var rs = ps.executeQuery();
+            ResultSet rs = ps.executeQuery();
             return rs.getInt(1);
 
         } catch (Exception e) {
