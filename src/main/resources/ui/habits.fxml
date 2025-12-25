@@ -1,18 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ComboBox?>
 
-<GridPane xmlns:fx="http://javafx.com/fxml"
-          fx:controller="com.echchhit.habittracker.controller.HabitsController"
-          fx:id="habitGrid"
-          hgap="6"
-          vgap="6"
-          styleClass="content-area">
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.echchhit.habittracker.controller.HabitsController"
+      spacing="10"
+      styleClass="content-area">
 
-    <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
-    </padding>
+    <!-- Month Selector -->
+    <ComboBox fx:id="monthSelector"
+              prefWidth="160"
+              styleClass="month-selector"/>
 
-</GridPane>
+    <!-- Habit Grid -->
+    <GridPane fx:id="habitGrid"
+              hgap="6"
+              vgap="6">
+
+        <padding>
+            <Insets top="20" right="20" bottom="20" left="20"/>
+        </padding>
+
+    </GridPane>
+
+</VBox>
