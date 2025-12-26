@@ -12,9 +12,9 @@
 
     <Label text="Settings" styleClass="page-title"/>
 
-    <HBox spacing="10" alignment="CENTER_LEFT">
+    <HBox spacing="12" alignment="CENTER_LEFT">
         <Label text="Dark Mode"/>
-        <ToggleButton fx:id="themeToggle" onAction="#toggleTheme"/>
+        <ToggleButton fx:id="themeToggle"/>
     </HBox>
 
 </VBox>

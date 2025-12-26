@@ -1,7 +1,7 @@
 package com.echchhit.habittracker.app;
 
-import com.echchhit.habittracker.database.DatabaseInitializer;
-import com.echchhit.habittracker.service.ThemeService;
+import com.echchhit.habittracker.database.DatabaseInitializer;import com.echchhit.habittracker.service.ThemeService;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -19,10 +19,15 @@ public class MainApp extends Application {
                 getClass().getResource("/ui/root.fxml")
         );
 
-        Scene scene = new Scene(loader.load(), 1000, 650);
+        Scene scene = new Scene(loader.load());
+
+        ThemeService.setScene(scene);
+        ThemeService.applyTheme();
+
         stage.setTitle("Habit Tracker");
         stage.setScene(scene);
         stage.show();
+
     }
 
     public static void main(String[] args) {

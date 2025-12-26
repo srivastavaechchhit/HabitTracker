@@ -6,7 +6,7 @@
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.echchhit.habittracker.controller.MainController"
-            stylesheets="@../theme/dark.css">
+            styleClass="app-root">
 
     <!-- Sidebar -->
     <left>
@@ -19,8 +19,6 @@
             <Button text="Settings" styleClass="sidebar-button" onAction="#loadSettings"/>
             <Button text="Calendar" styleClass="sidebar-button" onAction="#loadCalendar"/>
             <Button text="Charts" styleClass="sidebar-button" onAction="#loadCharts"/>
-
-
         </VBox>
     </left>
 

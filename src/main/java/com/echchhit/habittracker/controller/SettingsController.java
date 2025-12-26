@@ -10,7 +10,11 @@ public class SettingsController {
     private ToggleButton themeToggle;
 
     @FXML
-    private void toggleTheme() {
-        ThemeService.toggle(themeToggle.getScene());
+    public void initialize() {
+        // Sync toggle with current theme
+        themeToggle.setSelected(ThemeService.isDarkMode());
+
+        // Toggle theme on user action
+        themeToggle.setOnAction(e -> ThemeService.toggleTheme());
     }
 }

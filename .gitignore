@@ -42,3 +42,5 @@ habittracker.db
 # Ignore the Maven wrapper and local library folder
 .mvn/
 lib/
+
+repomix-output.xml
