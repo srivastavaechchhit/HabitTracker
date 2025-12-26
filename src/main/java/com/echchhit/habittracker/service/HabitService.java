@@ -65,4 +65,16 @@ public class HabitService {
         return map;
     }
 
+    public static void deleteAllHabitsAndLogs() {
+
+        try (Connection con = DatabaseManager.getConnection();
+             Statement st = con.createStatement()) {
+
+            st.execute("DELETE FROM habit_logs");
+            st.execute("DELETE FROM habits");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
