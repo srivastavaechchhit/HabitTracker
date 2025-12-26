@@ -4,11 +4,11 @@ import com.echchhit.habittracker.service.HabitLogService;
 import com.echchhit.habittracker.service.HabitService;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.control.TextInputDialog;
+
 import java.util.Optional;
 
 import java.time.LocalDate;
@@ -101,6 +101,15 @@ public class HabitsController {
 
             Label habitLabel = new Label(habit);
             habitLabel.setStyle("-fx-font-weight: bold;");
+
+            ContextMenu menu = new ContextMenu();
+
+            MenuItem completeItem = new MenuItem("Mark as Completed");
+            completeItem.setOnAction(e -> confirmAndCompleteHabit(habitId));
+
+            menu.getItems().add(completeItem);
+            habitLabel.setContextMenu(menu);
+
             habitGrid.add(habitLabel, 0, rowIndex);
 
             Set<LocalDate> completedDates =
@@ -131,6 +140,26 @@ public class HabitsController {
             rowIndex++;
         }
     }
+
+    private void confirmAndCompleteHabit(int habitId) {
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Complete Habit");
+        alert.setHeaderText("Finish this habit?");
+        alert.setContentText(
+                "You will stop tracking this habit.\n" +
+                        "All past data will remain available for analytics.\n\n" +
+                        "Continue?"
+        );
+
+        Optional<ButtonType> result = alert.showAndWait();
+
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            HabitService.markHabitCompleted(habitId);
+            reloadHabits();   // refresh ACTIVE-only list
+        }
+    }
+
 
     /* =====================================================
        HEADER

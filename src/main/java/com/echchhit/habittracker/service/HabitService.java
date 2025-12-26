@@ -48,7 +48,7 @@ public class HabitService {
         return habits;
     }
     public static Map<Integer, String> getAllHabitsWithIds() {
-        String sql = "SELECT id, name FROM habits ORDER BY id";
+        String sql = "SELECT id, name FROM habits WHERE status = 'ACTIVE' ORDER BY id";
         Map<Integer, String> map = new HashMap<>();
 
         try (Connection con = DatabaseManager.getConnection();
@@ -64,6 +64,22 @@ public class HabitService {
         }
         return map;
     }
+
+    public static void markHabitCompleted(int habitId) {
+
+        String sql = "UPDATE habits SET status = 'COMPLETED' WHERE id = ?";
+
+        try (Connection con = DatabaseManager.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, habitId);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public static void deleteAllHabitsAndLogs() {
 
