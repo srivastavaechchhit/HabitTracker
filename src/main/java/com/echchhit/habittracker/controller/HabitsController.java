@@ -1,12 +1,15 @@
 package com.echchhit.habittracker.controller;
 
 import com.echchhit.habittracker.service.HabitLogService;
+import com.echchhit.habittracker.service.HabitService;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.control.TextInputDialog;
+import java.util.Optional;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -27,12 +30,7 @@ public class HabitsController {
     // TEMP: habitId mapping (later from DB)
     private final Map<String, Integer> habitIdMap = new HashMap<>();
 
-    private final String[] habits = {
-            "Exercise",
-            "Reading",
-            "Meditation",
-            "Revision"
-    };
+    private Map<Integer, String> dbHabits = new HashMap<>();
 
     @FXML
     public void initialize() {
@@ -42,14 +40,11 @@ public class HabitsController {
         monthSelector.getItems().clear();
         monthSelector.getItems().add(currentMonth);
         monthSelector.setValue(currentMonth);
-
         monthSelector.setOnAction(e -> reloadGridForMonth(monthSelector.getValue()));
 
-
-        // TEMP habit IDs
-        for (int i = 0; i < habits.length; i++) {
-            habitIdMap.put(habits[i], i + 1);
-        }
+        dbHabits = HabitService.getAllHabitsWithIds();
+        habitIdMap.clear();
+        dbHabits.forEach((id, name) -> habitIdMap.put(name, id));
 
         // Auto-cross yesterday (ONLY at startup = day rollover)
         LocalDate yesterday = LocalDate.now().minusDays(1);
@@ -58,8 +53,83 @@ public class HabitsController {
         }
 
         buildDateHeader();
-        addHabitRows();
+        addHabitRowsFromDb();
         addBottomTotalRow();
+    }
+
+    @FXML
+    private void onAddHabit() {
+
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Add Habit");
+        dialog.setHeaderText(null);
+        dialog.setContentText("Enter habit name:");
+
+        Optional<String> result = dialog.showAndWait();
+
+        if (result.isPresent()) {
+            String habitName = result.get().trim();
+
+            if (!habitName.isEmpty()) {
+                HabitService.addHabit(habitName);
+                reloadHabits();
+            }
+        }
+    }
+
+    private void reloadHabits() {
+        habitGrid.getChildren().clear();
+        habitGrid.getColumnConstraints().clear();
+        dbHabits = HabitService.getAllHabitsWithIds();
+        buildDateHeader();
+        addHabitRowsFromDb();
+        addBottomTotalRow();
+    }
+
+    private void addHabitRowsFromDb() {
+
+        int today = LocalDate.now().getDayOfMonth();
+        YearMonth month = YearMonth.now();
+        int rowIndex = 1;
+
+        for (Map.Entry<Integer, String> entry : dbHabits.entrySet()) {
+
+            int habitId = entry.getKey();
+            String habit = entry.getValue();
+
+            habitRowMap.put(habitId, rowIndex);
+
+            Label habitLabel = new Label(habit);
+            habitLabel.setStyle("-fx-font-weight: bold;");
+            habitGrid.add(habitLabel, 0, rowIndex);
+
+            Set<LocalDate> completedDates =
+                    HabitLogService.getCompletedDatesForMonth(habitId, month);
+
+            for (int day = 1; day <= today; day++) {
+                LocalDate date = LocalDate.now().withDayOfMonth(day);
+
+                if (day == today) {
+                    habitGrid.add(
+                            createTodayBox(habitId, completedDates.contains(date)),
+                            day,
+                            rowIndex
+                    );
+                } else {
+                    habitGrid.add(
+                            createLockedBox(completedDates.contains(date)),
+                            day,
+                            rowIndex
+                    );
+                }
+            }
+
+            Label rowTotal = new Label(String.valueOf(completedDates.size()));
+            rowTotal.setStyle("-fx-font-weight: bold;");
+            habitGrid.add(rowTotal, today + 1, rowIndex);
+
+            rowIndex++;
+        }
     }
 
     /* =====================================================
@@ -123,106 +193,6 @@ public class HabitsController {
         habitGrid.add(new Label("TOTAL"), days + 1, 0);
     }
 
-
-    /* =====================================================
-       HABIT ROWS
-       ===================================================== */
-    private void addHabitRows() {
-
-        int today = LocalDate.now().getDayOfMonth();
-        YearMonth month = YearMonth.now();
-
-        for (int i = 0; i < habits.length; i++) {
-
-            String habit = habits[i];
-            int habitId = habitIdMap.get(habit);
-            int row = i + 1;
-            habitRowMap.put(habitId, row);
-
-
-            Label habitLabel = new Label(habit);
-            habitLabel.setStyle("-fx-font-weight: bold;");
-            habitGrid.add(habitLabel, 0, row);
-
-            Set<LocalDate> completedDates =
-                    HabitLogService.getCompletedDatesForMonth(habitId, month);
-
-            for (int day = 1; day <= today; day++) {
-
-                LocalDate date = LocalDate.now().withDayOfMonth(day);
-
-                if (day == today) {
-                    habitGrid.add(
-                            createTodayBox(habitId, completedDates.contains(date)),
-                            day,
-                            row
-                    );
-                } else {
-                    habitGrid.add(
-                            createLockedBox(completedDates.contains(date)),
-                            day,
-                            row
-                    );
-                }
-            }
-
-            // RIGHT SIDE TOTAL (days completed this month)
-            Label rowTotal = new Label(
-                    String.valueOf(completedDates.size())
-            );
-            rowTotal.setStyle("-fx-font-weight: bold;");
-            habitGrid.add(rowTotal, today + 1, row);
-        }
-    }
-
-    private void addHabitRowsForMonth(java.time.YearMonth month) {
-
-        int days =
-                month.equals(java.time.YearMonth.now())
-                        ? java.time.LocalDate.now().getDayOfMonth()
-                        : month.lengthOfMonth();
-
-        for (int i = 0; i < habits.length; i++) {
-
-            String habit = habits[i];
-            int habitId = habitIdMap.get(habit);
-            int row = i + 1;
-
-            habitGrid.add(new Label(habit), 0, row);
-
-            var completed =
-                    HabitLogService.getCompletedDatesForMonth(habitId, month);
-
-            for (int day = 1; day <= days; day++) {
-
-                java.time.LocalDate date =
-                        month.atDay(day);
-
-                if (month.equals(java.time.YearMonth.now()) &&
-                        date.equals(java.time.LocalDate.now())) {
-
-                    habitGrid.add(
-                            createTodayBox(habitId, completed.contains(date)),
-                            day,
-                            row
-                    );
-                } else {
-                    habitGrid.add(
-                            createLockedBox(completed.contains(date)),
-                            day,
-                            row
-                    );
-                }
-            }
-
-            habitGrid.add(
-                    new Label(String.valueOf(completed.size())),
-                    days + 1,
-                    row
-            );
-        }
-    }
-
     private void addBottomTotalRowForMonth(java.time.YearMonth month) {
 
         int days =
@@ -230,7 +200,7 @@ public class HabitsController {
                         ? java.time.LocalDate.now().getDayOfMonth()
                         : month.lengthOfMonth();
 
-        int bottomRow = habits.length + 1;
+        int bottomRow = habitRowMap.size() + 1;
 
         habitGrid.add(new Label("TOTAL"), 0, bottomRow);
 
@@ -244,8 +214,6 @@ public class HabitsController {
         habitGrid.add(new Label(String.valueOf(total)), days, bottomRow);
     }
 
-
-
     private int getHabitRow(int habitId) {
         return habitRowMap.getOrDefault(habitId, -1);
     }
@@ -255,7 +223,7 @@ public class HabitsController {
        ===================================================== */
     private void addBottomTotalRow() {
 
-        int bottomRow = habits.length + 1;
+        int bottomRow = habitRowMap.size() + 1;
         int today = LocalDate.now().getDayOfMonth();
 
         Label totalLabel = new Label("TOTAL");
@@ -354,7 +322,7 @@ public class HabitsController {
     private void refreshTotals() {
 
         int today = LocalDate.now().getDayOfMonth();
-        int bottomRow = habits.length + 1;
+        int bottomRow = habitRowMap.size() + 1;
 
         Label bottom = (Label) getNodeAt(today, bottomRow);
         if (bottom != null) {
@@ -397,7 +365,7 @@ public class HabitsController {
         habitGrid.getChildren().clear();
         habitGrid.getColumnConstraints().clear();
         buildDateHeaderForMonth(month);
-        addHabitRowsForMonth(month);
+        addHabitRowsFromDb();
         addBottomTotalRowForMonth(month);
     }
 

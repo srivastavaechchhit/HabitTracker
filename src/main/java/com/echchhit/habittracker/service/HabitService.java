@@ -6,7 +6,9 @@ import com.echchhit.habittracker.model.Habit;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HabitService {
 
@@ -45,4 +47,22 @@ public class HabitService {
         }
         return habits;
     }
+    public static Map<Integer, String> getAllHabitsWithIds() {
+        String sql = "SELECT id, name FROM habits ORDER BY id";
+        Map<Integer, String> map = new HashMap<>();
+
+        try (Connection con = DatabaseManager.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                map.put(rs.getInt("id"), rs.getString("name"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return map;
+    }
+
 }
