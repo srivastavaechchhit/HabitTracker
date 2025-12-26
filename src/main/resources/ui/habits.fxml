@@ -4,6 +4,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
@@ -26,5 +27,14 @@
         </padding>
 
     </GridPane>
+
+    <!-- Add Habit Button -->
+    <Button
+            fx:id="addHabitBtn"
+            text="Add Habit"
+            onAction="#onAddHabit"
+            prefWidth="120"
+    />
+
 
 </VBox>
