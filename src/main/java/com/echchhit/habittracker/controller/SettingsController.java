@@ -1,20 +1,24 @@
 package com.echchhit.habittracker.controller;
 
+import com.echchhit.habittracker.components.ToggleSwitch; // Import the new class
 import com.echchhit.habittracker.service.ThemeService;
 import javafx.fxml.FXML;
-import javafx.scene.control.ToggleButton;
 
 public class SettingsController {
 
     @FXML
-    private ToggleButton themeToggle;
+    private ToggleSwitch themeSwitch;
 
     @FXML
     public void initialize() {
-        // Sync toggle with current theme
-        themeToggle.setSelected(ThemeService.isDarkMode());
+        // 1. Sync state with current theme
+        themeSwitch.switchedOnProperty().set(ThemeService.isDarkMode());
 
-        // Toggle theme on user action
-        themeToggle.setOnAction(e -> ThemeService.toggleTheme());
+        // 2. Listen for changes (Animation is handled inside the component!)
+        themeSwitch.switchedOnProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != ThemeService.isDarkMode()) {
+                ThemeService.toggleTheme();
+            }
+        });
     }
 }

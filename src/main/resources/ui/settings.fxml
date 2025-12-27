@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import com.echchhit.habittracker.components.ToggleSwitch?>
 
 <VBox spacing="20"
       xmlns:fx="http://javafx.com/fxml"
@@ -12,9 +12,12 @@
 
     <Label text="Settings" styleClass="page-title"/>
 
-    <HBox spacing="12" alignment="CENTER_LEFT">
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <Label text="Light Mode"/>
+
+        <ToggleSwitch fx:id="themeSwitch" />
+
         <Label text="Dark Mode"/>
-        <ToggleButton fx:id="themeToggle"/>
     </HBox>
 
 </VBox>
