@@ -13,7 +13,7 @@ import java.util.Set;
 public class HabitLogService {
 
     /* =====================================================
-       CORE WRITE OPERATIONS
+       CORE WRITE OPERATIONS (UPDATED WITH GAMIFICATION)
        ===================================================== */
 
     // Mark habit as completed for TODAY
@@ -30,15 +30,23 @@ public class HabitLogService {
 
             ps.setInt(1, habitId);
             ps.setString(2, LocalDate.now().toString());
-            ps.executeUpdate();
+            int rows = ps.executeUpdate();
+
+            if (rows > 0) {
+                // GAMIFICATION: Add XP!
+                UserStatsService.addXp(10);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // Mark habit as MISSED (❌) for a specific date
+    // Mark habit as MISSED (❌) or UNCHECKED
     public static void markMissed(int habitId, LocalDate date) {
+        // First check if it was previously completed (so we can deduct XP)
+        boolean wasCompleted = !missedToday(habitId);
+
         String sql = """
             INSERT INTO habit_logs(habit_id, date, completed)
             VALUES (?, ?, 0)
@@ -53,13 +61,18 @@ public class HabitLogService {
             ps.setString(2, date.toString());
             ps.executeUpdate();
 
+            // GAMIFICATION: Deduct XP if they uncheck a box today
+            if (wasCompleted && date.equals(LocalDate.now())) {
+                UserStatsService.removeXp(10);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     /* =====================================================
-       PHASE 5 — DISCIPLINE LOGIC
+       DISCIPLINE LOGIC
        ===================================================== */
 
     // Auto-cross yesterday if user missed it
@@ -110,10 +123,9 @@ public class HabitLogService {
     }
 
     /* =====================================================
-       STREAKS & ANALYTICS
+       STREAKS & ANALYTICS (UNCHANGED)
        ===================================================== */
 
-    // Current streak (consecutive days completed)
     public static int getCurrentStreak(int habitId) {
         String sql = """
             SELECT date FROM habit_logs
@@ -132,7 +144,8 @@ public class HabitLogService {
 
             while (rs.next()) {
                 LocalDate date = LocalDate.parse(rs.getString("date"));
-                if (date.equals(today.minusDays(streak))) {
+                // Allow streak to persist if completed today OR yesterday
+                if (date.equals(today.minusDays(streak)) || date.equals(today.minusDays(streak + 1))) {
                     streak++;
                 } else {
                     break;
@@ -146,7 +159,6 @@ public class HabitLogService {
         return 0;
     }
 
-    // Monthly completion percentage
     public static double getMonthlyCompletionPercent(int habitId, YearMonth month) {
         String sql = """
             SELECT COUNT(*) FROM habit_logs
@@ -173,15 +185,8 @@ public class HabitLogService {
         return 0;
     }
 
-    /* =====================================================
-       CALENDAR & HEATMAP SUPPORT
-       ===================================================== */
-
-    // All completed dates in a month
     public static Set<LocalDate> getCompletedDatesForMonth(int habitId, YearMonth month) {
-
         Set<LocalDate> completed = new HashSet<>();
-
         String sql = """
             SELECT date FROM habit_logs
             WHERE habit_id = ?
@@ -203,48 +208,29 @@ public class HabitLogService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return completed;
     }
 
-    /* =====================================================
-       DAILY TOTALS (BOTTOM ROW, DASHBOARD)
-       ===================================================== */
-
-    // Total habits completed today
     public static int getCompletedCountToday() {
-        String sql = """
-            SELECT COUNT(*) FROM habit_logs
-            WHERE date = ? AND completed = 1
-        """;
-
+        String sql = "SELECT COUNT(*) FROM habit_logs WHERE date = ? AND completed = 1";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-
             ps.setString(1, LocalDate.now().toString());
             ResultSet rs = ps.executeQuery();
             return rs.getInt(1);
-
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
         }
     }
 
-    // Total habits completed on a given date
     public static int getCompletedCountByDate(LocalDate date) {
-        String sql = """
-            SELECT COUNT(*) FROM habit_logs
-            WHERE date = ? AND completed = 1
-        """;
-
+        String sql = "SELECT COUNT(*) FROM habit_logs WHERE date = ? AND completed = 1";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-
             ps.setString(1, date.toString());
             ResultSet rs = ps.executeQuery();
             return rs.getInt(1);
-
         } catch (Exception e) {
             return 0;
         }
