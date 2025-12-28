@@ -95,3 +95,15 @@
     -fx-font-size: 11px;
     -fx-font-weight: bold;
 }
+
+.today-column-cell {
+    -fx-border-color: #6C63FF;
+    -fx-border-width: 2.5;
+    -fx-border-radius: 4;
+    -fx-background-color: transparent;
+    -fx-transition: all 0.2s ease-in-out; /* Smooth growth */
+}
+
+.completed-today {
+    -fx-background-color: rgba(108, 99, 255, 0.05);
+}
