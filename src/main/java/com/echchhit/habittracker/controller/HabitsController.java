@@ -32,7 +32,6 @@ public class HabitsController {
 
     @FXML
     public void initialize() {
-
         YearMonth currentMonth = YearMonth.now();
 
         monthSelector.getItems().clear();
@@ -61,7 +60,6 @@ public class HabitsController {
         dialog.setTitle("Add Habit");
         dialog.setHeaderText(null);
         dialog.setContentText("Enter habit name:");
-        // Minimal styling for the dialog to match theme slightly better
         dialog.getDialogPane().setStyle("-fx-background-color: #2a2a2a;");
         dialog.getDialogPane().lookup(".content").setStyle("-fx-text-fill: white;");
 
@@ -86,9 +84,13 @@ public class HabitsController {
     }
 
     private void addHabitRowsFromDb() {
-        int today = LocalDate.now().getDayOfMonth();
+        LocalDate now = LocalDate.now();
+        int today = now.getDayOfMonth();
         YearMonth month = YearMonth.now();
+        int daysInMonth = month.lengthOfMonth();
         int rowIndex = 1;
+
+        habitRowMap.clear();
 
         for (Map.Entry<Integer, String> entry : dbHabits.entrySet()) {
             int habitId = entry.getKey();
@@ -99,7 +101,7 @@ public class HabitsController {
             Label habitLabel = new Label(habit);
             habitLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
 
-            // Context Menu for finishing/deleting a habit
+            // Context Menu
             ContextMenu menu = new ContextMenu();
             MenuItem completeItem = new MenuItem("Archive / Mark Complete");
             completeItem.setOnAction(e -> confirmAndCompleteHabit(habitId));
@@ -110,30 +112,26 @@ public class HabitsController {
 
             Set<LocalDate> completedDates = HabitLogService.getCompletedDatesForMonth(habitId, month);
 
-            for (int day = 1; day <= today; day++) {
-                LocalDate date = LocalDate.now().withDayOfMonth(day);
+            // Iterate through ALL days of the month
+            for (int day = 1; day <= daysInMonth; day++) {
+                LocalDate date = now.withDayOfMonth(day);
 
-                if (day == today) {
-                    // This is the interactive box for TODAY
-                    habitGrid.add(
-                            createTodayBox(habitId, completedDates.contains(date)),
-                            day,
-                            rowIndex
-                    );
+                if (day < today) {
+                    // 1. Previous days locked (No change allowed)
+                    habitGrid.add(createLockedBox(completedDates.contains(date)), day, rowIndex);
+                } else if (day == today) {
+                    // 2. Current day column: Highlighted and operative
+                    habitGrid.add(createTodayBox(habitId, completedDates.contains(date)), day, rowIndex);
                 } else {
-                    // Past days (locked)
-                    habitGrid.add(
-                            createLockedBox(completedDates.contains(date)),
-                            day,
-                            rowIndex
-                    );
+                    // 3. Later days: Faded and not operative
+                    habitGrid.add(createFutureBox(), day, rowIndex);
                 }
             }
 
             // Row Total Count
             Label rowTotal = new Label(String.valueOf(completedDates.size()));
             rowTotal.setStyle("-fx-font-weight: bold; -fx-text-fill: #666;");
-            habitGrid.add(rowTotal, today + 1, rowIndex);
+            habitGrid.add(rowTotal, daysInMonth + 1, rowIndex);
 
             rowIndex++;
         }
@@ -152,14 +150,13 @@ public class HabitsController {
         }
     }
 
-    /* =====================================================
-       GRID HEADER & TOTALS
-       ===================================================== */
     private void buildDateHeader() {
         habitGrid.getChildren().clear();
         habitGrid.getColumnConstraints().clear();
 
-        int today = LocalDate.now().getDayOfMonth();
+        LocalDate now = LocalDate.now();
+        int today = now.getDayOfMonth();
+        int daysInMonth = YearMonth.now().lengthOfMonth();
 
         // Habit Name Column
         ColumnConstraints habitCol = new ColumnConstraints();
@@ -170,16 +167,17 @@ public class HabitsController {
         habitsHeader.setStyle("-fx-text-fill: #888; -fx-font-size: 10px;");
         habitGrid.add(habitsHeader, 0, 0);
 
-        // Date Columns
-        double availableWidth = 70.0; // 70% of space for days
-        double datePercent = availableWidth / today;
+        // Date Columns for the full month
+        double availableWidth = 70.0;
+        double datePercent = availableWidth / daysInMonth;
 
-        for (int day = 1; day <= today; day++) {
+        for (int day = 1; day <= daysInMonth; day++) {
             ColumnConstraints cc = new ColumnConstraints();
             cc.setPercentWidth(datePercent);
             habitGrid.getColumnConstraints().add(cc);
 
             Label lbl = new Label(String.valueOf(day));
+            // Highlight current day column header
             lbl.setStyle("-fx-font-weight: bold; -fx-text-fill: " + (day == today ? "#6C63FF" : "#888") + ";");
             habitGrid.add(lbl, day, 0);
         }
@@ -191,21 +189,17 @@ public class HabitsController {
 
         Label totalHeader = new Label("TOTAL");
         totalHeader.setStyle("-fx-text-fill: #888; -fx-font-size: 10px;");
-        habitGrid.add(totalHeader, today + 1, 0);
+        habitGrid.add(totalHeader, daysInMonth + 1, 0);
     }
 
     private void reloadGridForMonth(YearMonth month) {
-        // Simple reload for now (same logic)
-        habitGrid.getChildren().clear();
-        habitGrid.getColumnConstraints().clear();
-        // NOTE: For full historic browsing, you'd adapt buildDateHeader to 'month.lengthOfMonth()'
-        // calling buildDateHeader() which defaults to 'today' for simplicity in this snippet
         initialize();
     }
 
     private void addBottomTotalRow() {
         int bottomRow = habitRowMap.size() + 1;
-        int today = LocalDate.now().getDayOfMonth();
+        LocalDate now = LocalDate.now();
+        int today = now.getDayOfMonth();
 
         Label totalLabel = new Label("TOTAL");
         totalLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #888; -fx-font-size: 10px;");
@@ -216,71 +210,53 @@ public class HabitsController {
         habitGrid.add(totalValue, today, bottomRow);
     }
 
-    /* =====================================================
-       INTERACTIVE TODAY BOX (WITH XP & ANIMATION)
-       ===================================================== */
     private StackPane createTodayBox(int habitId, boolean initiallyCompleted) {
         StackPane box = createEmptyBox();
-        box.setStyle("-fx-cursor: hand; -fx-background-color: transparent; -fx-border-color: #555; -fx-border-radius: 4;");
+        box.setStyle("-fx-cursor: hand; -fx-background-color: transparent; -fx-border-color: #6C63FF; -fx-border-radius: 4; -fx-border-width: 1.5;");
 
         if (initiallyCompleted) {
             addCheckMark(box);
         }
 
         box.setOnMouseClicked(e -> {
-            boolean isChecked = !box.getChildren().isEmpty(); // logic: empty = unchecked
-
+            boolean isChecked = !box.getChildren().isEmpty();
             LocalDate today = LocalDate.now();
 
             if (isChecked) {
-                // UNCHECK
                 HabitLogService.markMissed(habitId, today);
                 box.getChildren().clear();
-                box.setStyle("-fx-cursor: hand; -fx-background-color: transparent; -fx-border-color: #555; -fx-border-radius: 4;");
+                box.setStyle("-fx-cursor: hand; -fx-background-color: transparent; -fx-border-color: #6C63FF; -fx-border-radius: 4; -fx-border-width: 1.5;");
             } else {
-                // CHECK
                 HabitLogService.markCompleted(habitId);
                 addCheckMark(box);
-                // Highlight border
-                box.setStyle("-fx-cursor: hand; -fx-background-color: rgba(76, 175, 80, 0.1); -fx-border-color: #4CAF50; -fx-border-radius: 4;");
+                box.setStyle("-fx-cursor: hand; -fx-background-color: rgba(108, 99, 255, 0.1); -fx-border-color: #6C63FF; -fx-border-radius: 4; -fx-border-width: 1.5;");
             }
 
-            // 1. Refresh Totals in Grid
             refreshTotals();
             refreshRowTotal(habitId, getHabitRow(habitId));
-
-            // 2. TRIGGER XP UPDATE IN SIDEBAR (The crucial new part!)
             MainController.refreshStats();
         });
 
         return box;
     }
 
-    private void addCheckMark(StackPane box) {
-        Label check = new Label("✓");
-        check.setStyle("-fx-text-fill: #4CAF50; -fx-font-size: 14px; -fx-font-weight: bold;");
-        box.getChildren().setAll(check);
-
-        // ANIMATION: Pop effect
-        ScaleTransition st = new ScaleTransition(Duration.millis(200), check);
-        st.setFromX(0.1);
-        st.setFromY(0.1);
-        st.setToX(1.0);
-        st.setToY(1.0);
-        st.play();
-    }
-
     private StackPane createLockedBox(boolean completed) {
         StackPane box = createEmptyBox();
         if (completed) {
             Label check = new Label("✓");
-            check.setStyle("-fx-text-fill: #666;"); // Greyed out for past
+            check.setStyle("-fx-text-fill: #666;");
             box.getChildren().setAll(check);
         } else {
             Label cross = new Label("✗");
             cross.setStyle("-fx-text-fill: #444; -fx-font-size: 10px;");
             box.getChildren().setAll(cross);
         }
+        return box;
+    }
+
+    private StackPane createFutureBox() {
+        StackPane box = createEmptyBox();
+        box.setStyle("-fx-border-color: #333; -fx-border-radius: 4; -fx-opacity: 0.3;");
         return box;
     }
 
@@ -293,9 +269,19 @@ public class HabitsController {
         return box;
     }
 
-    /* =====================================================
-       REFRESH HELPERS
-       ===================================================== */
+    private void addCheckMark(StackPane box) {
+        Label check = new Label("✓");
+        check.setStyle("-fx-text-fill: #4CAF50; -fx-font-size: 14px; -fx-font-weight: bold;");
+        box.getChildren().setAll(check);
+
+        ScaleTransition st = new ScaleTransition(Duration.millis(200), check);
+        st.setFromX(0.1);
+        st.setFromY(0.1);
+        st.setToX(1.0);
+        st.setToY(1.0);
+        st.play();
+    }
+
     private void refreshTotals() {
         int today = LocalDate.now().getDayOfMonth();
         int bottomRow = habitRowMap.size() + 1;
@@ -308,7 +294,7 @@ public class HabitsController {
     private void refreshRowTotal(int habitId, int row) {
         YearMonth month = YearMonth.now();
         int completedDays = HabitLogService.getCompletedDatesForMonth(habitId, month).size();
-        int colIndex = LocalDate.now().getDayOfMonth() + 1;
+        int colIndex = month.lengthOfMonth() + 1;
 
         Label rowTotal = (Label) getNodeAt(colIndex, row);
         if (rowTotal != null) {

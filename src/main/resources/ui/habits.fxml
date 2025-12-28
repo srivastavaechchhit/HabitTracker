@@ -2,39 +2,35 @@
 
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.ScrollPane?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.echchhit.habittracker.controller.HabitsController"
       spacing="10"
       styleClass="content-area">
 
-    <!-- Month Selector -->
     <ComboBox fx:id="monthSelector"
               prefWidth="160"
               styleClass="month-selector"/>
 
-    <!-- Habit Grid -->
-    <GridPane fx:id="habitGrid"
-              hgap="6"
-              vgap="6">
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent;">
+        <GridPane fx:id="habitGrid"
+                  hgap="6"
+                  vgap="6">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+        </GridPane>
+    </ScrollPane>
 
-        <padding>
-            <Insets top="20" right="20" bottom="20" left="20"/>
-        </padding>
-
-    </GridPane>
-
-    <!-- Add Habit Button -->
     <Button
             fx:id="addHabitBtn"
             text="Add Habit"
             onAction="#onAddHabit"
             prefWidth="120"
     />
-
 
 </VBox>
