@@ -1,34 +1,33 @@
-/* ===== ROOT ===== */
+/* ===== ROOT & GLOBAL ===== */
 .app-root {
     -fx-font-family: "Segoe UI", "SF Pro Display", "Inter", sans-serif;
-    -fx-background-color: #121212;
-
-    /* ===== ACCENT COLORS ===== */
+    -fx-background-color: #0f0f12; /* Deeper dark background from premium update */
     -fx-accent: #6C63FF;
     -fx-focus-color: #6C63FF;
 }
 
+.label {
+    -fx-text-fill: #e0e0e0;
+}
 
-/* ===== SIDEBAR ===== */
+/* ===== SIDEBAR (Restored original sizes) ===== */
 .sidebar {
     -fx-background-color: #1a1a1a;
     -fx-padding: 20;
     -fx-spacing: 15;
 }
 
-/* App title */
 .sidebar-title {
     -fx-text-fill: #ffffff;
-    -fx-font-size: 18px;
+    -fx-font-size: 18px; /* Restored to original */
     -fx-font-weight: bold;
     -fx-padding: 0 0 20 0;
 }
 
-/* ===== SIDEBAR BUTTONS ===== */
 .sidebar-button {
     -fx-background-color: transparent;
     -fx-text-fill: #cfcfcf;
-    -fx-font-size: 14px;
+    -fx-font-size: 14px; /* Restored to original */
     -fx-alignment: CENTER_LEFT;
     -fx-padding: 10 15;
     -fx-background-radius: 8;
@@ -37,67 +36,76 @@
 .sidebar-button:hover {
     -fx-background-color: #2a2a2a;
     -fx-text-fill: #ffffff;
-}
-
-.sidebar-button:pressed {
-    -fx-background-color: #333333;
-}
-
-/* ===== CONTENT AREA ===== */
-.content-area {
-    -fx-background-color: #121212;
-    -fx-padding: 20;
-}
-
-/* ===== PAGE TITLES ===== */
-.page-title {
-    -fx-text-fill: #ffffff;
-    -fx-font-size: 20px;
-    -fx-font-weight: bold;
-}
-
-.label {
-    -fx-text-fill: #e0e0e0;
-}
-
-.toggle-button {
-    -fx-background-color: #2a2a2a;
-        -fx-text-fill: #ffffff;
-}
-
-.card {
-    -fx-background-color: #1e1e1e;
-    -fx-background-radius: 14;
-    -fx-padding: 20;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 15, 0.2, 0, 6);
-}
-
-/* ===== MICRO-ANIMATIONS ===== */
-
-.button {
-    -fx-background-radius: 10;
-}
-
-.button:hover {
     -fx-scale-x: 1.03;
     -fx-scale-y: 1.03;
 }
 
+/* ===== CONTENT AREA ===== */
+.content-area {
+    -fx-background-color: transparent;
+    -fx-padding: 30;
+}
+
+.page-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 28px;
+    -fx-font-weight: 800;
+    -fx-padding: 0 0 10 0;
+}
+
+/* ===== PREMIUM DASHBOARD CARDS ===== */
+.card {
+    -fx-background-color: #1a1a20;
+    -fx-background-radius: 16;
+    -fx-padding: 24;
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 20, 0, 0, 10);
+}
+
+.card:hover {
+    -fx-border-color: rgba(108, 99, 255, 0.3);
+}
+
+/* STAT TEXT STYLES */
+.stat-label {
+    -fx-text-fill: #888899;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.stat-value {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 34px;
+    -fx-font-weight: 900;
+}
+
+/* ===== PROGRESS RING ===== */
 .progress-indicator {
     -fx-accent: #6C63FF;
 }
 
-/* Missed day box (crossed, but NOT black) */
-.habit-missed {
+.progress-indicator .indicator {
     -fx-background-color: transparent;
-    -fx-border-color: #555555;
-    -fx-border-width: 1;
-    -fx-opacity: 0.6;
 }
 
-/* Cross mark label */
-.habit-missed-label {
-    -fx-text-fill: #888888;
-    -fx-font-size: 14px;
+.progress-indicator .determinate-indicator .track {
+    -fx-stroke: #2a2a32;
+    -fx-stroke-width: 6px;
 }
 
+.progress-indicator .determinate-indicator .bar {
+    -fx-stroke-width: 6px;
+    -fx-stroke-line-cap: round;
+}
+
+/* ===== HEATMAP CELLS ===== */
+.heatmap-cell {
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+
+.heatmap-cell:hover {
+    -fx-scale-x: 1.15;
+    -fx-scale-y: 1.15;
+}

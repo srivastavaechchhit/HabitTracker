@@ -2,7 +2,6 @@ package com.echchhit.habittracker.controller;
 
 import com.echchhit.habittracker.service.UserStatsService;
 import javafx.animation.FadeTransition;
-import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -35,7 +34,6 @@ public class MainController {
         updateUserStats();
     }
 
-    // Static method so other controllers can refresh the Sidebar XP!
     public static void refreshStats() {
         if (instance != null) {
             instance.updateUserStats();
@@ -68,18 +66,15 @@ public class MainController {
         ((javafx.stage.Stage)((javafx.scene.Node)event.getSource()).getScene().getWindow()).setIconified(true);
     }
 
+    // Navigation Methods
     @FXML private void loadDashboard() { loadPage("/ui/dashboard.fxml"); }
     @FXML private void loadHabits() { loadPage("/ui/habits.fxml"); }
     @FXML private void loadStats() { loadPage("/ui/stats.fxml"); }
-    @FXML private void loadSettings() { loadPage("/ui/settings.fxml"); }
-    @FXML private void loadCalendar() { loadPage("/ui/calendar.fxml"); }
     @FXML private void loadCharts() { loadPage("/ui/charts.fxml"); }
 
     private void loadPage(String fxmlPath) {
         try {
             Node page = FXMLLoader.load(getClass().getResource(fxmlPath));
-
-            // Simple transition
             contentPane.getChildren().setAll(page);
 
             FadeTransition fadeIn = new FadeTransition(Duration.millis(300), page);

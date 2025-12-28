@@ -8,69 +8,53 @@
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.control.ProgressIndicator?>
 
-<VBox spacing="30"
+<VBox spacing="35"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.echchhit.habittracker.controller.DashboardController"
       styleClass="content-area">
 
-    <!-- TITLE -->
     <Label text="Dashboard" styleClass="page-title"/>
 
-    <!-- TOP SUMMARY -->
-    <HBox spacing="20">
+    <HBox spacing="25">
 
-        <VBox spacing="10" styleClass="card">
-            <Label text="Total Habits"/>
-            <Label fx:id="totalHabits"
-                   style="-fx-font-size: 26; -fx-font-weight: bold;"/>
+        <VBox spacing="12" styleClass="card" HBox.hgrow="ALWAYS">
+            <Label text="Total Habits" styleClass="stat-label"/>
+            <Label fx:id="totalHabits" text="0" styleClass="stat-value"/>
         </VBox>
 
-        <VBox spacing="10" styleClass="card">
-            <Label text="Completed Today"/>
-            <Label fx:id="completedToday"
-                   style="-fx-font-size: 26; -fx-font-weight: bold;"/>
+        <VBox spacing="12" styleClass="card" HBox.hgrow="ALWAYS">
+            <Label text="Completed Today" styleClass="stat-label"/>
+            <Label fx:id="completedToday" text="0" styleClass="stat-value"/>
         </VBox>
 
-        <VBox spacing="10" styleClass="card">
-            <Label text="Best Streak"/>
-            <Label fx:id="bestStreak"
-                   style="-fx-font-size: 26; -fx-font-weight: bold;"/>
+        <VBox spacing="12" styleClass="card" HBox.hgrow="ALWAYS">
+            <Label text="Best Streak" styleClass="stat-label"/>
+            <Label fx:id="bestStreak" text="🔥 0" styleClass="stat-value"/>
         </VBox>
 
-        <VBox spacing="10" styleClass="card">
-            <Label text="Completion"/>
-            <ProgressIndicator fx:id="completionRing"
-                               prefWidth="80"
-                               prefHeight="80"/>
-            <Label fx:id="completionPercent"/>
+        <VBox spacing="10" styleClass="card" alignment="CENTER" HBox.hgrow="ALWAYS">
+            <ProgressIndicator fx:id="completionRing" prefWidth="70" prefHeight="70" progress="0.0"/>
+            <Label fx:id="completionPercent" text="0%" styleClass="stat-label"/>
         </VBox>
 
     </HBox>
 
-
-    <!-- TODAY + CALENDAR -->
-    <HBox spacing="20">
-
-        <!-- TODAY FOCUS -->
-        <VBox spacing="10" styleClass="card">
-            <Label text="Today Focus"/>
-            <Label fx:id="todayFocus"
-                   wrapText="true"/>
+    <HBox spacing="25">
+        <VBox spacing="15" styleClass="card" HBox.hgrow="ALWAYS">
+            <Label text="Today's Focus" styleClass="stat-label"/>
+            <Label fx:id="todayFocus" wrapText="true"
+                   style="-fx-font-size: 16; -fx-text-fill: #bbb; -fx-font-style: italic;"/>
         </VBox>
 
-        <!-- CALENDAR PREVIEW -->
-        <VBox spacing="10" styleClass="card">
-            <Label text="Last 7 Days"/>
-
-            <HBox spacing="6" fx:id="heatmapBox"/>
+        <VBox spacing="15" styleClass="card" HBox.hgrow="ALWAYS">
+            <Label text="Last 7 Days" styleClass="stat-label"/>
+            <HBox spacing="8" fx:id="heatmapBox" alignment="CENTER_LEFT"/>
         </VBox>
-
     </HBox>
 
-    <!-- WEEKLY CHART -->
-    <VBox spacing="10" styleClass="card">
-        <Label text="Weekly Progress"/>
-        <LineChart fx:id="weeklyChart">
+    <VBox spacing="15" styleClass="card">
+        <Label text="Weekly Progress" styleClass="stat-label"/>
+        <LineChart fx:id="weeklyChart" createSymbols="true" prefHeight="300">
             <xAxis><CategoryAxis/></xAxis>
             <yAxis><NumberAxis/></yAxis>
         </LineChart>

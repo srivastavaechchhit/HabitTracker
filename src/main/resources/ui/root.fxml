@@ -17,15 +17,16 @@
 
     <top>
         <HBox spacing="10" alignment="CENTER_RIGHT"
-              style="-fx-background-color: #1a1a1a; -fx-padding: 8 15;">
+              style="-fx-background-color: #f8f9fa; -fx-padding: 8 15; -fx-border-color: #e9ecef; -fx-border-width: 0 0 1 0;">
 
-            <Label text="Habit Tracker Pro" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-opacity: 0.8;" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+            <Label text="Habit Tracker Pro" style="-fx-text-fill: #1a1a1a; -fx-font-weight: bold; -fx-opacity: 0.8;"
+                   maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
 
             <Button text="—" onAction="#minimizeApp"
-                    style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 14; -fx-cursor: hand;"/>
+                    style="-fx-background-color: transparent; -fx-text-fill: #1a1a1a; -fx-font-size: 14; -fx-cursor: hand;"/>
 
             <Button text="☐" onAction="#maximizeApp"
-                    style="-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 14; -fx-cursor: hand;"/>
+                    style="-fx-background-color: transparent; -fx-text-fill: #1a1a1a; -fx-font-size: 14; -fx-cursor: hand;"/>
 
             <Button text="✕" onAction="#closeApp"
                     style="-fx-background-color: #ff5f56; -fx-text-fill: white; -fx-background-radius: 50; -fx-min-width: 25; -fx-cursor: hand;"/>
@@ -35,27 +36,25 @@
     <left>
         <VBox prefWidth="240" styleClass="sidebar">
 
-            <VBox spacing="5" style="-fx-background-color: #2a2a2a; -fx-background-radius: 8; -fx-padding: 15;">
+            <VBox spacing="5" style="-fx-background-color: #f1f3f5; -fx-background-radius: 8; -fx-padding: 15;">
                 <HBox alignment="CENTER_LEFT" spacing="10">
                     <Label text="⚡" style="-fx-font-size: 20;"/>
                     <VBox>
-                        <Label text="LEVEL" style="-fx-text-fill: #888; -fx-font-size: 10; -fx-font-weight: bold;"/>
-                        <Label fx:id="levelLabel" text="1" style="-fx-text-fill: white; -fx-font-size: 18; -fx-font-weight: bold;"/>
+                        <Label text="LEVEL" style="-fx-text-fill: #666; -fx-font-size: 10; -fx-font-weight: bold;"/>
+                        <Label fx:id="levelLabel" text="1" style="-fx-text-fill: #1a1a1a; -fx-font-size: 18; -fx-font-weight: bold;"/>
                     </VBox>
                 </HBox>
 
-                <Label text="XP Progress" style="-fx-text-fill: #666; -fx-font-size: 10;"/>
+                <Label text="XP Progress" style="-fx-text-fill: #888; -fx-font-size: 10;"/>
                 <ProgressBar fx:id="xpBar" progress="0.0" prefWidth="200" style="-fx-accent: #6C63FF;"/>
             </VBox>
 
-            <Label text="MENU" style="-fx-text-fill: #666; -fx-font-size: 12; -fx-padding: 10 0 5 0;"/>
+            <Label text="MENU" style="-fx-text-fill: #888; -fx-font-size: 12; -fx-padding: 10 0 5 0;"/>
 
             <Button text="🏠  Dashboard" styleClass="sidebar-button" onAction="#loadDashboard"/>
             <Button text="✅  Habits" styleClass="sidebar-button" onAction="#loadHabits"/>
             <Button text="📈  Statistics" styleClass="sidebar-button" onAction="#loadStats"/>
             <Button text="📊  Charts" styleClass="sidebar-button" onAction="#loadCharts"/>
-            <Button text="📅  Calendar" styleClass="sidebar-button" onAction="#loadCalendar"/>
-            <Button text="⚙️  Settings" styleClass="sidebar-button" onAction="#loadSettings"/>
         </VBox>
     </left>
 
