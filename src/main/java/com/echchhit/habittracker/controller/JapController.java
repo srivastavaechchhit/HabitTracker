@@ -10,15 +10,17 @@ import javafx.geometry.Pos;
 
 public class JapController {
     @FXML private TextField countField;
+    @FXML private Label totalChantsLabel;
     @FXML private ListView<String> japHistoryList;
 
     private final ObservableList<String> historyData = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() {
-        countField.setText(String.valueOf(JapService.getTodayCount()));
+        // Link the ObservableList to the ListView
         japHistoryList.setItems(historyData);
 
+        // Custom Cell Factory for a modern look and Deletion feature
         japHistoryList.setCellFactory(lv -> {
             ListCell<String> cell = new ListCell<String>() {
                 @Override
@@ -29,11 +31,14 @@ public class JapController {
                         setText(null);
                         setContextMenu(null);
                     } else {
+                        // Safety check for the "Date : Count Chants" format
                         if (!item.contains(" : ")) {
                             setText(item);
                             setGraphic(null);
                         } else {
                             String[] parts = item.split(" : ");
+
+                            // UI elements for the list row
                             Label dateLabel = new Label(parts[0]);
                             dateLabel.setStyle("-fx-text-fill: #888; -fx-font-weight: bold;");
 
@@ -54,9 +59,9 @@ public class JapController {
                             ContextMenu contextMenu = new ContextMenu();
                             MenuItem deleteItem = new MenuItem("Delete Entry");
                             deleteItem.setOnAction(event -> {
-                                JapService.deleteJapLog(parts[0]); // parts[0] is the Date
-                                refreshHistory();
-                                // Reset today's field if the deleted date is today
+                                JapService.deleteJapLog(parts[0]); // Delete by date
+                                refreshDisplay();
+                                // Reset today's field if the deleted entry was for today
                                 if (parts[0].equals(java.time.LocalDate.now().toString())) {
                                     countField.setText("0");
                                 }
@@ -70,25 +75,46 @@ public class JapController {
             return cell;
         });
 
-        refreshHistory();
+        refreshDisplay();
     }
 
     @FXML
     private void handleUpdate() {
         try {
-            int val = Integer.parseInt(countField.getText());
+            int val = Integer.parseInt(countField.getText().trim());
+            // Validating the 100,000 limit
             if (val >= 0 && val <= 100000) {
                 JapService.updateJapCount(val);
-                MainController.refreshStats();
-                refreshHistory();
+                refreshDisplay();
+                MainController.refreshStats(); // Update global XP/Level
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Limit Exceeded", "Please enter a number between 0 and 100,000.");
             }
         } catch (NumberFormatException e) {
-            System.err.println("Invalid input");
+            showAlert(Alert.AlertType.ERROR, "Invalid Input", "Please enter a valid numeric value.");
         }
     }
 
-    private void refreshHistory() {
+    /**
+     * Synchronizes all UI components with the latest data from the database.
+     */
+    private void refreshDisplay() {
+        // Update lifetime total with formatting
+        totalChantsLabel.setText(String.format("%,d", JapService.getTotalChants()));
+
+        // Update today's entry field
+        countField.setText(String.valueOf(JapService.getTodayCount()));
+
+        // Update the history list
         historyData.clear();
         historyData.addAll(JapService.getAllJapLogs());
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.show();
     }
 }

@@ -55,4 +55,19 @@ public class JapService {
             e.printStackTrace();
         }
     }
+
+    // Add this method to JapService.java
+    public static int getTotalChants() {
+        String sql = "SELECT SUM(count) FROM jap_logs";
+        try (Connection conn = DatabaseManager.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 }
