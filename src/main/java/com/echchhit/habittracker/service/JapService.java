@@ -43,4 +43,16 @@ public class JapService {
         } catch (Exception e) { e.printStackTrace(); }
         return logs;
     }
+
+    // Add to JapService.java
+    public static void deleteJapLog(String date) {
+        String sql = "DELETE FROM jap_logs WHERE date = ?";
+        try (Connection conn = com.echchhit.habittracker.database.DatabaseManager.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, date);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
