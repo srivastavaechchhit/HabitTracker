@@ -53,8 +53,6 @@
 
             <Button text="🏠  Dashboard" styleClass="sidebar-button" onAction="#loadDashboard"/>
             <Button text="✅  Habits" styleClass="sidebar-button" onAction="#loadHabits"/>
-            <Button text="📈  Statistics" styleClass="sidebar-button" onAction="#loadStats"/>
-            <Button text="📊  Charts" styleClass="sidebar-button" onAction="#loadCharts"/>
         </VBox>
     </left>
 
