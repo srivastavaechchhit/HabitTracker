@@ -48,9 +48,13 @@
 
     <VBox spacing="15" styleClass="card">
         <Label text="Weekly Progress" styleClass="stat-label"/>
-        <LineChart fx:id="weeklyChart" createSymbols="true" prefHeight="300">
-            <xAxis><CategoryAxis/></xAxis>
-            <yAxis><NumberAxis/></yAxis>
+        <LineChart fx:id="weeklyChart" animated="false" createSymbols="true" prefHeight="400">
+            <xAxis>
+                <CategoryAxis fx:id="xAxis" animated="false"/>
+            </xAxis>
+            <yAxis>
+                <NumberAxis fx:id="yAxis" animated="false" autoRanging="false" tickUnit="1"/>
+            </yAxis>
         </LineChart>
     </VBox>
 
