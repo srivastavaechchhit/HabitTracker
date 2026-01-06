@@ -9,17 +9,18 @@ public class DatabaseInitializer {
         try (Connection conn = DatabaseManager.getConnection();
              Statement stmt = conn.createStatement()) {
 
-            // 1. Habits Table (Added category)
+            // 1. Habits Table
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS habits (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
                     category TEXT DEFAULT 'General',
-                    created_at TEXT NOT NULL
+                    created_at TEXT NOT NULL,
+                    status TEXT DEFAULT 'ACTIVE'
                 );
             """);
 
-            // 2. Logs Table (Same as before)
+            // 2. Logs Table
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS habit_logs (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -30,7 +31,7 @@ public class DatabaseInitializer {
                 );
             """);
 
-            // 3. User Stats Table (New! For XP)
+            // 3. User Stats Table
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS user_stats (
                     id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -39,7 +40,15 @@ public class DatabaseInitializer {
                 );
             """);
 
-            // Initialize stats row if empty
+            // 4. Jap Logs Table (New)
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS jap_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    count INTEGER NOT NULL,
+                    date TEXT NOT NULL UNIQUE
+                );
+            """);
+
             stmt.execute("INSERT OR IGNORE INTO user_stats (id, total_xp, current_level) VALUES (1, 0, 1)");
 
         } catch (Exception e) {

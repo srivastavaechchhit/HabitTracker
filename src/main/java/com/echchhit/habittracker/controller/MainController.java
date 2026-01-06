@@ -69,6 +69,7 @@ public class MainController {
     // Navigation Methods
     @FXML private void loadDashboard() { loadPage("/ui/dashboard.fxml"); }
     @FXML private void loadHabits() { loadPage("/ui/habits.fxml"); }
+    @FXML private void loadJap() { loadPage("/ui/jap.fxml"); }
 
     private void loadPage(String fxmlPath) {
         try {
