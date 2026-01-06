@@ -31,12 +31,6 @@
             <Label text="Best Streak" styleClass="stat-label"/>
             <Label fx:id="bestStreak" text="🔥 0" styleClass="stat-value"/>
         </VBox>
-
-        <VBox spacing="10" styleClass="card" alignment="CENTER" HBox.hgrow="ALWAYS">
-            <ProgressIndicator fx:id="completionRing" prefWidth="70" prefHeight="70" progress="0.0"/>
-            <Label fx:id="completionPercent" text="0%" styleClass="stat-label"/>
-        </VBox>
-
     </HBox>
 
     <HBox spacing="25">
