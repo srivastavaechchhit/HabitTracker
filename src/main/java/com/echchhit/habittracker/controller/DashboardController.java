@@ -7,7 +7,6 @@ import javafx.fxml.FXML;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
@@ -36,7 +35,7 @@ public class DashboardController {
 
         // 3. Set the motivational focus text
         todayFocus.setText(
-                HabitService.getAllHabits().isEmpty()
+                HabitService.getAllHabitsWithIds().isEmpty()
                         ? "No habits yet. Add one to begin."
                         : "Stay consistent! Every small step counts toward your goals."
         );
@@ -102,7 +101,7 @@ public class DashboardController {
     }
 
     private void loadSummary() {
-        int total = HabitService.getAllHabits().size();
+        int total = HabitService.getAllHabitsWithIds().size();
         int completed = HabitLogService.getCompletedCountToday();
 
         totalHabits.setText(String.valueOf(total));

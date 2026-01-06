@@ -36,24 +36,6 @@ public class HabitService {
         }
     }
 
-    public static List<Habit> getAllHabits() {
-        List<Habit> habits = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT * FROM habits")) {
-            while (rs.next()) {
-                habits.add(new Habit(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("created_at")
-                ));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return habits;
-    }
-
     public static Map<Integer, String> getAllHabitsWithIds() {
         String sql = "SELECT id, name FROM habits WHERE status = 'ACTIVE' ORDER BY id";
         Map<Integer, String> map = new HashMap<>();

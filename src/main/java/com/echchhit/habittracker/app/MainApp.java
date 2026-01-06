@@ -1,7 +1,6 @@
 package com.echchhit.habittracker.app;
 
 import com.echchhit.habittracker.database.DatabaseInitializer;
-import com.echchhit.habittracker.service.ThemeService;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -35,8 +34,7 @@ public class MainApp extends Application {
         });
 
         Scene scene = new Scene(root);
-        ThemeService.setScene(scene);
-        ThemeService.applyTheme();
+        scene.getStylesheets().add(getClass().getResource("/theme/light.css").toExternalForm());
 
         stage.setScene(scene);
         stage.show();
