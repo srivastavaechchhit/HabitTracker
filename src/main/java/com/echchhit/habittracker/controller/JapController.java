@@ -86,7 +86,6 @@ public class JapController {
             if (val >= 0 && val <= 100000) {
                 JapService.updateJapCount(val);
                 refreshDisplay();
-                MainController.refreshStats(); // Update global XP/Level
             } else {
                 showAlert(Alert.AlertType.ERROR, "Limit Exceeded", "Please enter a number between 0 and 100,000.");
             }

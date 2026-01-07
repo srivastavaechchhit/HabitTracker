@@ -21,22 +21,46 @@ public class BookService {
     }
 
     public static void updateReadingProgress(int bookId, int additionalPages) {
-        String updateBook = "UPDATE books SET pages_read = pages_read + ? WHERE id = ?";
+        String selectSql = "SELECT pages_read, total_pages FROM books WHERE id = ?";
+        String updateBook = "UPDATE books SET pages_read = ?, status = ? WHERE id = ?";
         String logProgress = "INSERT INTO reading_logs(book_id, pages_read_today, date) VALUES(?, ?, ?)";
 
         try (Connection conn = DatabaseManager.getConnection()) {
+            int currentRead = 0;
+            int totalPages = 0;
+
+            // 1. Fetch current status
+            try (PreparedStatement ps = conn.prepareStatement(selectSql)) {
+                ps.setInt(1, bookId);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    currentRead = rs.getInt("pages_read");
+                    totalPages = rs.getInt("total_pages");
+                }
+            }
+
+            // 2. Calculate new total and cap it
+            int newTotal = Math.min(currentRead + additionalPages, totalPages);
+            int pagesActuallyLogged = newTotal - currentRead;
+            String newStatus = (newTotal >= totalPages) ? "COMPLETED" : "READING";
+
+            if (pagesActuallyLogged <= 0) return; // No progress to log
+
+            // 3. Update Book
             try (PreparedStatement ps1 = conn.prepareStatement(updateBook)) {
-                ps1.setInt(1, additionalPages);
-                ps1.setInt(2, bookId);
+                ps1.setInt(1, newTotal);
+                ps1.setString(2, newStatus);
+                ps1.setInt(3, bookId);
                 ps1.executeUpdate();
             }
+
+            // 4. Log Daily Progress
             try (PreparedStatement ps2 = conn.prepareStatement(logProgress)) {
                 ps2.setInt(1, bookId);
-                ps2.setInt(2, additionalPages);
+                ps2.setInt(2, pagesActuallyLogged);
                 ps2.setString(3, LocalDate.now().toString());
                 ps2.executeUpdate();
             }
-            UserStatsService.addXp(additionalPages); // Award XP per page read
         } catch (Exception e) { e.printStackTrace(); }
     }
 
@@ -62,4 +86,48 @@ public class BookService {
             return rs.next() ? rs.getInt(1) : 0;
         } catch (Exception e) { return 0; }
     }
+
+    // Add this method to the BookService class
+    public static void deleteBook(int bookId) {
+        String selectXp = "SELECT pages_read FROM books WHERE id = ?";
+        String deleteLogs = "DELETE FROM reading_logs WHERE book_id = ?";
+        String deleteBook = "DELETE FROM books WHERE id = ?";
+
+        try (Connection conn = DatabaseManager.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                // 1. Calculate XP to remove
+                int xpToRemove = 0;
+                try (PreparedStatement psXp = conn.prepareStatement(selectXp)) {
+                    psXp.setInt(1, bookId);
+                    ResultSet rs = psXp.executeQuery();
+                    if (rs.next()) {
+                        xpToRemove = rs.getInt("pages_read");
+                    }
+                }
+
+                // 2. Delete Logs
+                try (PreparedStatement ps1 = conn.prepareStatement(deleteLogs)) {
+                    ps1.setInt(1, bookId);
+                    ps1.executeUpdate();
+                }
+
+                // 3. Delete Book
+                try (PreparedStatement ps2 = conn.prepareStatement(deleteBook)) {
+                    ps2.setInt(1, bookId);
+                    ps2.executeUpdate();
+                }
+
+                conn.commit();
+            } catch (Exception e) {
+                conn.rollback();
+                e.printStackTrace();
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

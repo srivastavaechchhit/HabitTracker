@@ -1,7 +1,7 @@
 /* ===== ROOT & GLOBAL ===== */
 .app-root {
     -fx-font-family: "Segoe UI", "SF Pro Display", "Inter", sans-serif;
-    -fx-background-color: #f8f9fa;
+    -fx-background-color: #f8f9fa; /* Soft light gray background */
     -fx-accent: #6C63FF;
 }
 
@@ -32,6 +32,7 @@
     -fx-alignment: CENTER_LEFT;
     -fx-padding: 10 15;
     -fx-background-radius: 8;
+    -fx-cursor: hand;
 }
 
 .sidebar-button:hover {
@@ -45,7 +46,73 @@
     -fx-padding: 30;
 }
 
-/* ===== HABIT GRID STYLES (NEW) ===== */
+.page-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #1a1a1a;
+}
+
+/* ===== MODERN CARD SYSTEM ===== */
+.card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    /* Professional subtle drop shadow */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);
+    -fx-padding: 20;
+}
+
+.stat-label {
+    -fx-text-fill: #6c757d;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-letter-spacing: 1px;
+}
+
+.stat-value {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1a1a1a;
+}
+
+/* ===== READING ROOM SPECIFIC STYLES ===== */
+.book-item-container {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 10;
+    -fx-border-color: #f1f3f5;
+    -fx-border-width: 1;
+    -fx-padding: 15;
+    -fx-transition: all 0.3s ease;
+}
+
+.book-item-container:hover {
+    -fx-border-color: #6C63FF;
+    -fx-effect: dropshadow(three-pass-box, rgba(108, 99, 255, 0.1), 10, 0, 0, 0);
+}
+
+.reading-progress-text {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6C63FF;
+    -fx-font-weight: bold;
+}
+
+/* Custom Progress Bar Styling */
+.progress-bar {
+    -fx-background-color: #f1f3f5;
+    -fx-background-radius: 10;
+    -fx-padding: 0;
+}
+
+.progress-bar .track {
+    -fx-background-color: #f1f3f5;
+    -fx-background-radius: 10;
+}
+
+.progress-bar .bar {
+    -fx-background-color: #6C63FF;
+    -fx-background-radius: 10;
+}
+
+/* ===== HABIT GRID STYLES ===== */
 .habit-cell {
     -fx-border-color: #e9ecef;
     -fx-border-radius: 4;
@@ -53,57 +120,46 @@
     -fx-alignment: CENTER;
 }
 
-.habit-cell-today {
-    -fx-border-color: #6C63FF;
-    -fx-border-width: 1.5;
-    -fx-cursor: hand;
-}
-
-.habit-cell-today:hover {
-    -fx-background-color: rgba(108, 99, 255, 0.05);
-}
-
-.habit-cell-locked {
-    -fx-opacity: 0.9;
-    -fx-cursor: hand;
-}
-
-.habit-cell-future {
-    -fx-opacity: 0.3;
-    -fx-background-color: #f1f3f5;
-}
-
-.habit-check {
-    -fx-text-fill: #2ecc71;
-    -fx-font-weight: bold;
-    -fx-font-size: 14px;
-}
-
-.habit-cross {
-    -fx-text-fill: #e74c3c;
-    -fx-font-size: 10px;
-}
-
-.month-selector {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #e9ecef;
-    -fx-border-radius: 4;
-}
-
-.stat-label {
-    -fx-text-fill: #6c757d;
-    -fx-font-size: 11px;
-    -fx-font-weight: bold;
-}
-
 .today-column-cell {
     -fx-border-color: #6C63FF;
     -fx-border-width: 2.5;
     -fx-border-radius: 4;
     -fx-background-color: transparent;
-    -fx-transition: all 0.2s ease-in-out; /* Smooth growth */
 }
 
 .completed-today {
     -fx-background-color: rgba(108, 99, 255, 0.05);
+}
+
+/* ===== LIST VIEW CLEANUP ===== */
+.list-view {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 5 0;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: transparent;
+}
+
+.list-cell:filled:selected {
+    -fx-background-color: transparent;
+}
+
+/* ===== INPUT STYLES ===== */
+.month-selector, .text-field {
+    -fx-background-color: #f1f3f5;
+    -fx-border-color: #e9ecef;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 12;
+}
+
+.text-field:focused {
+    -fx-border-color: #6C63FF;
+    -fx-background-color: #ffffff;
 }

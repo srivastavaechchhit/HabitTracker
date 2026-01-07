@@ -2,30 +2,41 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.shape.Circle?>
 
-<VBox spacing="20" xmlns:fx="http://javafx.com/fxml"
+<VBox spacing="25" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.echchhit.habittracker.controller.ReadingController"
       styleClass="content-area">
 
     <VBox spacing="5">
-        <Label text="Reading Tracker" styleClass="page-title" style="-fx-font-size: 24; -fx-font-weight: bold;"/>
-        <Label text="Keep track of your reading journey" style="-fx-text-fill: #888;"/>
+        <Label text="Library &amp; Reading" styleClass="page-title" style="-fx-font-size: 28; -fx-font-weight: 800;"/>
+        <Label text="Track your knowledge and story progression" style="-fx-text-fill: #888; -fx-font-size: 14;"/>
     </VBox>
 
-    <HBox spacing="20">
-        <VBox styleClass="card" HBox.hgrow="ALWAYS" alignment="CENTER" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 10;">
-            <Label text="BOOKS FINISHED" styleClass="stat-label"/>
-            <Label fx:id="booksFinishedLabel" text="0" style="-fx-font-size: 28; -fx-font-weight: bold;"/>
+    <HBox spacing="25">
+        <VBox spacing="15" prefWidth="300" maxWidth="300">
+            <VBox spacing="10" styleClass="card">
+                <Label text="OVERALL PROGRESS" styleClass="stat-label"/>
+                <HBox alignment="CENTER_LEFT" spacing="15">
+                    <Label fx:id="booksFinishedLabel" text="0" style="-fx-font-size: 36; -fx-font-weight: 900; -fx-text-fill: #1a1a1a;"/>
+                    <Label text="Books Done" style="-fx-text-fill: #888; -fx-font-size: 14;"/>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="15" styleClass="card">
+                <Label text="ADD NEW COLLECTION" styleClass="stat-label"/>
+                <TextField fx:id="titleField" promptText="Book Title" styleClass="month-selector"/>
+                <TextField fx:id="authorField" promptText="Author Name" styleClass="month-selector"/>
+                <TextField fx:id="totalPagesField" promptText="Total Pages" styleClass="month-selector"/>
+                <Button text="Register Book" onAction="#handleAddBook" maxWidth="Infinity"
+                        style="-fx-background-color: #6C63FF; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12; -fx-background-radius: 8; -fx-cursor: hand;"/>
+            </VBox>
+        </VBox>
+
+        <VBox spacing="15" HBox.hgrow="ALWAYS" styleClass="card">
+            <Label text="ACTIVE READING LIST" styleClass="stat-label"/>
+            <ListView fx:id="bookListView" VBox.vgrow="ALWAYS"
+                      style="-fx-background-color: transparent; -fx-background-insets: 0; -fx-padding: 0;"/>
         </VBox>
     </HBox>
-
-    <VBox spacing="10" styleClass="card" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10;">
-        <Label text="ADD NEW BOOK" styleClass="stat-label"/>
-        <TextField fx:id="titleField" promptText="Book Title"/>
-        <TextField fx:id="authorField" promptText="Author"/>
-        <TextField fx:id="totalPagesField" promptText="Total Pages"/>
-        <Button text="Add Book" onAction="#handleAddBook" maxWidth="Infinity" style="-fx-background-color: #6C63FF; -fx-text-fill: white; -fx-font-weight: bold;"/>
-    </VBox>
-
-    <ListView fx:id="bookListView" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;"/>
 </VBox>

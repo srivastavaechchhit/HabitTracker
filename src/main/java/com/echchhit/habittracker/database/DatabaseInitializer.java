@@ -31,16 +31,7 @@ public class DatabaseInitializer {
                 );
             """);
 
-            // 3. User Stats Table
-            stmt.execute("""
-                CREATE TABLE IF NOT EXISTS user_stats (
-                    id INTEGER PRIMARY KEY CHECK (id = 1),
-                    total_xp INTEGER DEFAULT 0,
-                    current_level INTEGER DEFAULT 1
-                );
-            """);
-
-            // 4. Jap Logs Table
+            // 3. Jap Logs Table
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS jap_logs (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,7 +40,7 @@ public class DatabaseInitializer {
                 );
             """);
 
-            // 5. Books Table (New)
+            // 4. Books Table (New)
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS books (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,7 +52,7 @@ public class DatabaseInitializer {
                 );
             """);
 
-            // 6. Reading Logs Table (New)
+            // 5. Reading Logs Table (New)
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS reading_logs (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,

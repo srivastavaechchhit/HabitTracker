@@ -23,9 +23,9 @@ public class HabitLogService {
             ps.setInt(1, habitId);
             ps.setString(2, date.toString());
             int rows = ps.executeUpdate();
-            if (rows > 0 && date.equals(LocalDate.now())) {
-                UserStatsService.addXp(10);
-            }
+//            if (rows > 0 && date.equals(LocalDate.now())) {
+//                UserStatsService.addXp(10);
+//            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -44,9 +44,9 @@ public class HabitLogService {
             ps.setInt(1, habitId);
             ps.setString(2, date.toString());
             ps.executeUpdate();
-            if (wasCompleted && date.equals(LocalDate.now())) {
-                UserStatsService.removeXp(10);
-            }
+//            if (wasCompleted && date.equals(LocalDate.now())) {
+//                UserStatsService.removeXp(10);
+//            }
         } catch (Exception e) {
             e.printStackTrace();
         }

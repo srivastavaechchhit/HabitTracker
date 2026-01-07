@@ -240,7 +240,6 @@ public class HabitsController {
 
             refreshTotals();
             refreshRowTotal(habitId, getHabitRow(habitId));
-            MainController.refreshStats();
         });
 
         return box;

@@ -1,13 +1,9 @@
 package com.echchhit.habittracker.controller;
 
-import com.echchhit.habittracker.service.UserStatsService;
 import javafx.animation.FadeTransition;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
@@ -15,12 +11,6 @@ public class MainController {
 
     @FXML
     private StackPane contentPane;
-
-    @FXML
-    private Label levelLabel;
-
-    @FXML
-    private ProgressBar xpBar;
 
     private static MainController instance;
 
@@ -31,23 +21,6 @@ public class MainController {
     @FXML
     public void initialize() {
         loadPage("/ui/dashboard.fxml");
-        updateUserStats();
-    }
-
-    public static void refreshStats() {
-        if (instance != null) {
-            instance.updateUserStats();
-        }
-    }
-
-    private void updateUserStats() {
-        Platform.runLater(() -> {
-            int[] stats = UserStatsService.getUserStats();
-            double progress = UserStatsService.getProgressToNextLevel();
-
-            if (levelLabel != null) levelLabel.setText(String.valueOf(stats[1]));
-            if (xpBar != null) xpBar.setProgress(progress);
-        });
     }
 
     @FXML

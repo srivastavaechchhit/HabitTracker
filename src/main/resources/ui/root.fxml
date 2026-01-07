@@ -36,25 +36,12 @@
     <left>
         <VBox prefWidth="240" styleClass="sidebar">
 
-            <VBox spacing="5" style="-fx-background-color: #f1f3f5; -fx-background-radius: 8; -fx-padding: 15;">
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label text="⚡" style="-fx-font-size: 20;"/>
-                    <VBox>
-                        <Label text="LEVEL" style="-fx-text-fill: #666; -fx-font-size: 10; -fx-font-weight: bold;"/>
-                        <Label fx:id="levelLabel" text="1" style="-fx-text-fill: #1a1a1a; -fx-font-size: 18; -fx-font-weight: bold;"/>
-                    </VBox>
-                </HBox>
-
-                <Label text="XP Progress" style="-fx-text-fill: #888; -fx-font-size: 10;"/>
-                <ProgressBar fx:id="xpBar" progress="0.0" prefWidth="200" style="-fx-accent: #6C63FF;"/>
-            </VBox>
-
             <Label text="MENU" style="-fx-text-fill: #888; -fx-font-size: 12; -fx-padding: 10 0 5 0;"/>
 
             <Button text="🏠  Dashboard" styleClass="sidebar-button" onAction="#loadDashboard"/>
             <Button text="✅  Habits" styleClass="sidebar-button" onAction="#loadHabits"/>
             <Button text="📿  Naam Jap" styleClass="sidebar-button" onAction="#loadJap"/>
-            <Button text="📚  Reading" styleClass="sidebar-button" onAction="#loadReading"/>
+            <Button text="📖  Reading Room" styleClass="sidebar-button" onAction="#loadReading"/>
         </VBox>
     </left>
 
