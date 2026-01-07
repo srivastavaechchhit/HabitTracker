@@ -1,16 +1,21 @@
 package com.echchhit.habittracker.controller;
 
+import com.echchhit.habittracker.service.JapService;
 import javafx.animation.FadeTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
 public class MainController {
 
     @FXML
     private StackPane contentPane;
+
+    @FXML
+    private VBox chantOverlay; // Reference to the mandatory overlay in root.fxml
 
     private static MainController instance;
 
@@ -20,7 +25,23 @@ public class MainController {
 
     @FXML
     public void initialize() {
+        // Load the dashboard as the default starting page
         loadPage("/ui/dashboard.fxml");
+    }
+
+    /**
+     * Dismisses the mandatory chant overlay and logs progress.
+     * This allows the user to interact with the rest of the application.
+     */
+    @FXML
+    private void dismissChantOverlay() {
+        // 1. Automatically update today's Jap count by 100
+        int currentToday = JapService.getTodayCount();
+        JapService.updateJapCount(currentToday + 100);
+
+        // 2. Hide the overlay
+        chantOverlay.setVisible(false);
+        chantOverlay.setManaged(false);
     }
 
     @FXML
