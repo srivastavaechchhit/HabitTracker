@@ -17,7 +17,7 @@
 
     <BorderPane fx:id="mainLayout">
         <top>
-            <HBox spacing="10" alignment="CENTER_RIGHT"
+            <HBox fx:id="titleBar" spacing="10" alignment="CENTER_RIGHT"
                   style="-fx-background-color: #f8f9fa; -fx-padding: 8 15; -fx-border-color: #e9ecef; -fx-border-width: 0 0 1 0;">
                 <Label text="Habit Tracker Pro" style="-fx-text-fill: #1a1a1a; -fx-font-weight: bold; -fx-opacity: 0.8;"
                        maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
@@ -48,12 +48,14 @@
                style="-fx-text-fill: #888; -fx-font-size: 16; -fx-font-style: italic;"/>
 
         <VBox alignment="CENTER" spacing="10"
-              style="-fx-background-color: #f8f9fa; -fx-padding: 30; -fx-background-radius: 20; -fx-border-color: #e9ecef; -fx-border-radius: 20; -fx-max-width: 350; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 15, 0, 0, 10);">
+              style="-fx-background-color: #f8f9fa; -fx-padding: 30; -fx-background-radius: 20; -fx-border-color: #e9ecef; -fx-border-radius: 20; -fx-max-width: 350;
+              -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 15, 0, 0, 10);">
             <Label text="DAILY GOAL" style="-fx-text-fill: #6C63FF; -fx-font-weight: bold; -fx-letter-spacing: 2;"/>
             <Label text="100 Chants" style="-fx-font-size: 28; -fx-font-weight: 900;"/>
         </VBox>
 
         <Button text="I Have Finished" onAction="#dismissChantOverlay"
-                style="-fx-background-color: #6C63FF; -fx-text-fill: white; -fx-font-size: 18; -fx-font-weight: bold; -fx-padding: 15 70; -fx-background-radius: 40; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(108, 99, 255, 0.4), 20, 0, 0, 10);"/>
+                style="-fx-background-color: #6C63FF; -fx-text-fill: white; -fx-font-size: 18; -fx-font-weight: bold; -fx-padding: 15 70; -fx-background-radius: 40; -fx-cursor: hand;
+                -fx-effect: dropshadow(three-pass-box, rgba(108, 99, 255, 0.4), 20, 0, 0, 10);"/>
     </VBox>
 </StackPane>
