@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="20" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.echchhit.habittracker.controller.ReadingController"
+      styleClass="content-area">
+
+    <VBox spacing="5">
+        <Label text="Reading Tracker" styleClass="page-title" style="-fx-font-size: 24; -fx-font-weight: bold;"/>
+        <Label text="Keep track of your reading journey" style="-fx-text-fill: #888;"/>
+    </VBox>
+
+    <HBox spacing="20">
+        <VBox styleClass="card" HBox.hgrow="ALWAYS" alignment="CENTER" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 10;">
+            <Label text="BOOKS FINISHED" styleClass="stat-label"/>
+            <Label fx:id="booksFinishedLabel" text="0" style="-fx-font-size: 28; -fx-font-weight: bold;"/>
+        </VBox>
+    </HBox>
+
+    <VBox spacing="10" styleClass="card" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10;">
+        <Label text="ADD NEW BOOK" styleClass="stat-label"/>
+        <TextField fx:id="titleField" promptText="Book Title"/>
+        <TextField fx:id="authorField" promptText="Author"/>
+        <TextField fx:id="totalPagesField" promptText="Total Pages"/>
+        <Button text="Add Book" onAction="#handleAddBook" maxWidth="Infinity" style="-fx-background-color: #6C63FF; -fx-text-fill: white; -fx-font-weight: bold;"/>
+    </VBox>
+
+    <ListView fx:id="bookListView" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;"/>
+</VBox>

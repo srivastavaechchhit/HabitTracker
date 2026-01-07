@@ -40,12 +40,34 @@ public class DatabaseInitializer {
                 );
             """);
 
-            // 4. Jap Logs Table (New)
+            // 4. Jap Logs Table
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS jap_logs (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     count INTEGER NOT NULL,
                     date TEXT NOT NULL UNIQUE
+                );
+            """);
+
+            // 5. Books Table (New)
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS books (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title TEXT NOT NULL,
+                    author TEXT,
+                    total_pages INTEGER NOT NULL,
+                    pages_read INTEGER DEFAULT 0,
+                    status TEXT DEFAULT 'READING'
+                );
+            """);
+
+            // 6. Reading Logs Table (New)
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS reading_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    book_id INTEGER NOT NULL,
+                    pages_read_today INTEGER NOT NULL,
+                    date TEXT NOT NULL
                 );
             """);
 
