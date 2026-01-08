@@ -5,23 +5,21 @@ import com.echchhit.habittracker.database.DatabaseManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class StatsService {
 
-    // Last 7 days completion count (all habits)
+    // In StatsService.java
     public static java.util.Map<String, Integer> getWeeklyCompletion() {
+        java.util.Map<String, Integer> data = new java.util.LinkedHashMap<>();
 
-        java.util.Map<String, Integer> data =
-                new java.util.LinkedHashMap<>();
-
+        // Updated SQL to fetch from the start of the current month
         String sql = """
         SELECT date, COUNT(*) AS completed
         FROM habit_logs
         WHERE completed = 1
-        AND date >= date('now', '-6 days')
+        AND date >= date('now', 'start of month')
         GROUP BY date
         ORDER BY date
     """;
@@ -29,18 +27,12 @@ public class StatsService {
         try (var conn = DatabaseManager.getConnection();
              var stmt = conn.createStatement();
              var rs = stmt.executeQuery(sql)) {
-
             while (rs.next()) {
-                data.put(
-                        rs.getString("date"),
-                        rs.getInt("completed")
-                );
+                data.put(rs.getString("date"), rs.getInt("completed"));
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return data;
     }
 
