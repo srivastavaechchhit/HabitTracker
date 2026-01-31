@@ -1,12 +1,9 @@
 package com.echchhit.habittracker.service;
 
 import com.echchhit.habittracker.database.DatabaseManager;
-import com.echchhit.habittracker.model.Habit;
-
 import java.sql.*;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,19 +33,35 @@ public class HabitService {
         }
     }
 
+    // 1. UPDATE: Fetch by 'sort_order' and use LinkedHashMap to keep that order
     public static Map<Integer, String> getAllHabitsWithIds() {
-        String sql = "SELECT id, name FROM habits WHERE status = 'ACTIVE' ORDER BY id";
-        Map<Integer, String> map = new HashMap<>();
+        String sql = "SELECT id, name FROM habits WHERE status = 'ACTIVE' ORDER BY sort_order ASC";
+        Map<Integer, String> map = new LinkedHashMap<>(); // <--- Must be LinkedHashMap
         try (Connection con = DatabaseManager.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 map.put(rs.getInt("id"), rs.getString("name"));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
         return map;
+    }
+
+    // 2. NEW: Save the new order to the database
+    public static void updateHabitOrder(List<Integer> habitIds) {
+        String sql = "UPDATE habits SET sort_order = ? WHERE id = ?";
+        try (Connection conn = DatabaseManager.getConnection()) {
+            conn.setAutoCommit(false); // Speed up with batching
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                for (int i = 0; i < habitIds.size(); i++) {
+                    ps.setInt(1, i + 1);      // Order starts at 1
+                    ps.setInt(2, habitIds.get(i)); // The Habit ID
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+                conn.commit();
+            }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     public static void markHabitCompleted(int habitId) {

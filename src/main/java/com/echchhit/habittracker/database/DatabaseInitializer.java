@@ -16,7 +16,8 @@ public class DatabaseInitializer {
                     name TEXT NOT NULL,
                     category TEXT DEFAULT 'General',
                     created_at TEXT NOT NULL,
-                    status TEXT DEFAULT 'ACTIVE'
+                    status TEXT DEFAULT 'ACTIVE',
+                    sort_order INTEGER DEFAULT 0
                 );
             """);
 
@@ -62,7 +63,11 @@ public class DatabaseInitializer {
                 );
             """);
 
-            stmt.execute("INSERT OR IGNORE INTO user_stats (id, total_xp, current_level) VALUES (1, 0, 1)");
+            try {
+                stmt.execute("ALTER TABLE habits ADD COLUMN sort_order INTEGER DEFAULT 0");
+            } catch (Exception ignored) { }
+
+            stmt.execute("UPDATE habits SET sort_order = id WHERE sort_order = 0 OR sort_order IS NULL");
 
         } catch (Exception e) {
             e.printStackTrace();

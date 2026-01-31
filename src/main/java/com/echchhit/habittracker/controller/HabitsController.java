@@ -2,19 +2,24 @@ package com.echchhit.habittracker.controller;
 
 import com.echchhit.habittracker.service.HabitLogService;
 import com.echchhit.habittracker.service.HabitService;
-import javafx.animation.*;
-import javafx.application.Platform;
-import javafx.fxml.FXML;
-import javafx.scene.Node;
-import javafx.scene.control.*;
 import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.GridPane;
+import javafx.application.Platform;
+import javafx.scene.layout.HBox;
+import javafx.scene.control.*;
+import javafx.scene.input.*;
 import javafx.util.Duration;
-
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.ArrayList;
+import javafx.geometry.Pos;
+import javafx.scene.Cursor;
+import javafx.animation.*;
 import java.util.HashMap;
+import javafx.scene.Node;
+import javafx.fxml.FXML;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -55,6 +60,8 @@ public class HabitsController {
     private void refreshUI() {
         habitGrid.getChildren().clear();
         habitGrid.getColumnConstraints().clear();
+
+        // This fetches habits in the correct 'sort_order' thanks to your HabitService update
         dbHabits = HabitService.getAllHabitsWithIds();
 
         buildDateHeader();
@@ -173,21 +180,81 @@ public class HabitsController {
         int daysInMonth = selectedMonth.lengthOfMonth();
         LocalDate today = LocalDate.now();
 
+        // 1. Get the current ordered list of IDs to help with index calculations
+        List<Integer> currentOrder = new ArrayList<>(dbHabits.keySet());
+
         for (Map.Entry<Integer, String> entry : dbHabits.entrySet()) {
             int habitId = entry.getKey();
             String name = entry.getValue();
             habitRowMap.put(habitId, rowIndex);
 
+            // --- DRAG HANDLE ---
+            Label dragHandle = new Label("≡");
+            dragHandle.setStyle("-fx-font-size: 18px; -fx-text-fill: #aaa; -fx-padding: 0 8 0 0;");
+            dragHandle.setCursor(Cursor.MOVE);
+            dragHandle.setTooltip(new Tooltip("Drag to reorder"));
+
+            // --- HABIT NAME ---
             Label habitLabel = new Label(name);
             habitLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
+            habitLabel.setMaxWidth(Double.MAX_VALUE);
 
+            // Context Menu
             ContextMenu menu = new ContextMenu();
             MenuItem archive = new MenuItem("Archive Habit");
             archive.setOnAction(e -> archiveHabit(habitId));
             menu.getItems().add(archive);
             habitLabel.setContextMenu(menu);
 
-            habitGrid.add(habitLabel, 0, rowIndex);
+            // --- CONTAINER (Handle + Name) ---
+            HBox nameContainer = new HBox(dragHandle, habitLabel);
+            nameContainer.setAlignment(Pos.CENTER_LEFT);
+            nameContainer.setUserData(habitId); // Store ID for drop logic
+
+            // --- DRAG EVENTS ---
+
+            // A. START DRAG (On the Handle only)
+            dragHandle.setOnDragDetected(event -> {
+                Dragboard db = dragHandle.startDragAndDrop(TransferMode.MOVE);
+                ClipboardContent content = new ClipboardContent();
+                content.putString(String.valueOf(habitId)); // Carry the ID
+                db.setContent(content);
+                event.consume();
+            });
+
+            // B. DRAG OVER (On the whole row name area)
+            nameContainer.setOnDragOver(event -> {
+                if (event.getGestureSource() != nameContainer && event.getDragboard().hasString()) {
+                    event.acceptTransferModes(TransferMode.MOVE);
+                }
+                event.consume();
+            });
+
+            // C. DROP (Reorder Logic)
+            nameContainer.setOnDragDropped(event -> {
+                Dragboard db = event.getDragboard();
+                boolean success = false;
+                if (db.hasString()) {
+                    int sourceId = Integer.parseInt(db.getString());
+                    int targetId = (int) nameContainer.getUserData();
+
+                    if (sourceId != targetId) {
+                        // Reorder the local list
+                        currentOrder.remove(Integer.valueOf(sourceId));
+                        int targetIndex = currentOrder.indexOf(targetId);
+                        currentOrder.add(targetIndex, sourceId);
+
+                        // Save to DB and Refresh UI
+                        HabitService.updateHabitOrder(currentOrder);
+                        refreshUI();
+                        success = true;
+                    }
+                }
+                event.setDropCompleted(success);
+                event.consume();
+            });
+
+            habitGrid.add(nameContainer, 0, rowIndex);
 
             Set<LocalDate> completedDates = HabitLogService.getCompletedDatesForMonth(habitId, selectedMonth);
 
@@ -232,7 +299,6 @@ public class HabitsController {
                 box.getChildren().clear();
                 box.getStyleClass().remove("completed-today");
             } else {
-                // Service expects two arguments: ID and Date
                 HabitLogService.markCompleted(habitId, today);
                 addCheckMark(box);
                 box.getStyleClass().add("completed-today");
@@ -247,9 +313,6 @@ public class HabitsController {
 
     private void applyColumnHover(int colIndex, boolean isHovered) {
         double scale = isHovered ? 1.1 : 1.0;
-
-        // Create a copy of the children list to avoid ConcurrentModificationException
-        // when calling toFront()
         java.util.ArrayList<Node> childrenCopy = new java.util.ArrayList<>(habitGrid.getChildren());
 
         for (Node node : childrenCopy) {
@@ -257,8 +320,6 @@ public class HabitsController {
             if (c != null && c == colIndex) {
                 node.setScaleX(scale);
                 node.setScaleY(scale);
-
-                // Bring to front so the scaled column is not hidden behind other cells
                 if (isHovered) {
                     node.toFront();
                 }
