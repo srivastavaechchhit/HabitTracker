@@ -21,6 +21,28 @@ public class HabitService {
         }
     }
 
+    // ... inside HabitService class ...
+
+    public static void deleteHabit(int id) {
+        String sqlLogs = "DELETE FROM habit_logs WHERE habit_id = ?";
+        String sqlHabit = "DELETE FROM habits WHERE id = ?";
+
+        try (Connection conn = DatabaseManager.getConnection()) {
+            // 1. Delete associated logs first
+            try (PreparedStatement ps = conn.prepareStatement(sqlLogs)) {
+                ps.setInt(1, id);
+                ps.executeUpdate();
+            }
+            // 2. Delete the habit itself
+            try (PreparedStatement ps = conn.prepareStatement(sqlHabit)) {
+                ps.setInt(1, id);
+                ps.executeUpdate();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void updateHabitName(int id, String newName) {
         String sql = "UPDATE habits SET name = ? WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();

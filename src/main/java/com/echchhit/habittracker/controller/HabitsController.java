@@ -5,10 +5,10 @@ import com.echchhit.habittracker.service.HabitService;
 import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos; // <--- Fixed "red line" under setAlignment
+import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
-import javafx.scene.control.*; // <--- Fixed "red line" under setStyle (Button/Label)
+import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.util.Duration;
@@ -21,13 +21,12 @@ public class HabitsController {
 
     @FXML private GridPane habitGrid;
     @FXML private ComboBox<YearMonth> monthSelector;
-    @FXML private Button viewToggleBtn; // The button you added to FXML (⊞)
+    @FXML private Button viewToggleBtn;
 
     private final Map<Integer, Integer> habitRowMap = new HashMap<>();
     private Map<Integer, String> dbHabits = new HashMap<>();
     private YearMonth selectedMonth = YearMonth.now();
 
-    // Track current view mode (False = Table/List, True = Card/Tiles)
     private boolean isCardView = false;
 
     @FXML
@@ -43,26 +42,19 @@ public class HabitsController {
             });
         }
 
-        // Load data
         dbHabits = HabitService.getAllHabitsWithIds();
-
-        // Auto-mark missed days
         LocalDate yesterday = LocalDate.now().minusDays(1);
         for (int id : dbHabits.keySet()) {
             HabitLogService.autoCrossIfMissed(id, yesterday);
         }
 
         refreshUI();
-
-        // Trigger entrance animation
         Platform.runLater(this::animateGridEntrySynchronized);
     }
 
-    // --- VIEW TOGGLE LOGIC ---
     @FXML
     private void onToggleView() {
         isCardView = !isCardView;
-        // Update Icon: ☰ for List, ⊞ for Cards
         if (viewToggleBtn != null) {
             viewToggleBtn.setText(isCardView ? "☰" : "⊞");
         }
@@ -75,7 +67,6 @@ public class HabitsController {
         habitGrid.getColumnConstraints().clear();
         habitGrid.getRowConstraints().clear();
 
-        // Fetch fresh data (Sorted by sort_order)
         dbHabits = HabitService.getAllHabitsWithIds();
 
         if (isCardView) {
@@ -87,10 +78,7 @@ public class HabitsController {
 
     // --- CARD VIEW RENDERING ---
     private void renderCardView() {
-        // Layout: 3 Cards per row
         int columns = 3;
-
-        // Define Column Constraints (33% each)
         for(int i=0; i<columns; i++){
             ColumnConstraints col = new ColumnConstraints();
             col.setPercentWidth(100.0 / columns);
@@ -107,10 +95,8 @@ public class HabitsController {
             int col = index % columns;
             int row = index / columns;
 
-            // Check if completed today
             boolean isCompleted = HabitLogService.getCompletedDatesForMonth(habitId, YearMonth.now()).contains(today);
 
-            // Create Card Node
             Node card = createHabitCard(habitId, name, isCompleted);
             habitGrid.add(card, col, row);
 
@@ -123,58 +109,48 @@ public class HabitsController {
         card.setAlignment(Pos.CENTER);
         card.setPadding(new javafx.geometry.Insets(20));
 
-        // Dynamic Style based on completion
         String baseStyle = "-fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);";
         String bgStyle = isCompleted
-                ? "-fx-background-color: linear-gradient(to bottom right, #6C63FF, #5a52d5);" // Purple if done
+                ? "-fx-background-color: linear-gradient(to bottom right, #6C63FF, #5a52d5);"
                 : "-fx-background-color: white;";
-
         card.setStyle(baseStyle + bgStyle);
 
-        // Habit Name
         Label nameLbl = new Label(name);
         nameLbl.setWrapText(true);
         nameLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; " +
                 (isCompleted ? "-fx-text-fill: white;" : "-fx-text-fill: #333;"));
 
-        // Status Label
         Label statusLbl = new Label(isCompleted ? "Completed Today!" : "Not done yet");
         statusLbl.setStyle("-fx-font-size: 12px; " + (isCompleted ? "-fx-text-fill: #e0e0e0;" : "-fx-text-fill: #888;"));
 
-        // Action Button
         Button actionBtn = new Button(isCompleted ? "✓" : "Mark Done");
         actionBtn.setStyle(isCompleted
                 ? "-fx-background-color: white; -fx-text-fill: #6C63FF; -fx-background-radius: 20; -fx-font-weight: bold;"
                 : "-fx-background-color: #f0f0f0; -fx-text-fill: #666; -fx-background-radius: 20;");
-
         actionBtn.setCursor(Cursor.HAND);
 
-        // Click Action
         actionBtn.setOnAction(e -> {
             if (isCompleted) {
                 HabitLogService.markMissed(habitId, LocalDate.now());
             } else {
                 HabitLogService.markCompleted(habitId, LocalDate.now());
             }
-            refreshUI(); // Re-render to update color/state
+            refreshUI();
         });
+
+        // --- CONTEXT MENU FOR CARDS ---
+        ContextMenu menu = createContextMenu(habitId, name);
+        card.setOnContextMenuRequested(e -> menu.show(card, e.getScreenX(), e.getScreenY()));
 
         card.getChildren().addAll(nameLbl, statusLbl, actionBtn);
 
-        // Hover effect
-        card.setOnMouseEntered(e -> {
-            card.setScaleX(1.03);
-            card.setScaleY(1.03);
-        });
-        card.setOnMouseExited(e -> {
-            card.setScaleX(1.0);
-            card.setScaleY(1.0);
-        });
+        card.setOnMouseEntered(e -> { card.setScaleX(1.03); card.setScaleY(1.03); });
+        card.setOnMouseExited(e -> { card.setScaleX(1.0); card.setScaleY(1.0); });
 
         return card;
     }
 
-    // --- TABLE (LIST) VIEW RENDERING ---
+    // --- TABLE VIEW RENDERING ---
     private void renderTableView() {
         buildDateHeader();
         addHabitRows();
@@ -222,7 +198,6 @@ public class HabitsController {
         int daysInMonth = selectedMonth.lengthOfMonth();
         LocalDate today = LocalDate.now();
 
-        // Used for Drag & Drop logic
         List<Integer> currentOrder = new ArrayList<>(dbHabits.keySet());
 
         for (Map.Entry<Integer, String> entry : dbHabits.entrySet()) {
@@ -230,41 +205,33 @@ public class HabitsController {
             String name = entry.getValue();
             habitRowMap.put(habitId, rowIndex);
 
-            // --- DRAG HANDLE (The "Equal To" Sign) ---
+            // Drag Handle
             Label dragHandle = new Label("≡");
             dragHandle.setStyle("-fx-font-size: 18px; -fx-text-fill: #aaa; -fx-padding: 0 8 0 0;");
             dragHandle.setCursor(Cursor.MOVE);
             dragHandle.setTooltip(new Tooltip("Drag to reorder"));
 
-            // --- HABIT NAME ---
+            // Habit Name
             Label habitLabel = new Label(name);
             habitLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
             habitLabel.setMaxWidth(Double.MAX_VALUE);
 
-            // Context Menu
-            ContextMenu menu = new ContextMenu();
-            MenuItem archive = new MenuItem("Archive Habit");
-            archive.setOnAction(e -> archiveHabit(habitId));
-            menu.getItems().add(archive);
-            habitLabel.setContextMenu(menu);
+            // --- CONTEXT MENU FOR LIST ITEM ---
+            habitLabel.setContextMenu(createContextMenu(habitId, name));
 
-            // --- CONTAINER (Handle + Name) ---
             HBox nameContainer = new HBox(dragHandle, habitLabel);
             nameContainer.setAlignment(Pos.CENTER_LEFT);
-            nameContainer.setUserData(habitId); // Store ID for drop logic
+            nameContainer.setUserData(habitId);
 
-            // --- DRAG EVENTS ---
-
-            // A. START DRAG
+            // Drag Logic
             dragHandle.setOnDragDetected(event -> {
                 Dragboard db = dragHandle.startDragAndDrop(TransferMode.MOVE);
                 ClipboardContent content = new ClipboardContent();
-                content.putString(String.valueOf(habitId)); // Carry the ID
+                content.putString(String.valueOf(habitId));
                 db.setContent(content);
                 event.consume();
             });
 
-            // B. DRAG OVER
             nameContainer.setOnDragOver(event -> {
                 if (event.getGestureSource() != nameContainer && event.getDragboard().hasString()) {
                     event.acceptTransferModes(TransferMode.MOVE);
@@ -272,21 +239,16 @@ public class HabitsController {
                 event.consume();
             });
 
-            // C. DROP (Reorder Logic)
             nameContainer.setOnDragDropped(event -> {
                 Dragboard db = event.getDragboard();
                 boolean success = false;
                 if (db.hasString()) {
                     int sourceId = Integer.parseInt(db.getString());
                     int targetId = (int) nameContainer.getUserData();
-
                     if (sourceId != targetId) {
-                        // Reorder local list
                         currentOrder.remove(Integer.valueOf(sourceId));
                         int targetIndex = currentOrder.indexOf(targetId);
                         currentOrder.add(targetIndex, sourceId);
-
-                        // Save to DB and Refresh
                         HabitService.updateHabitOrder(currentOrder);
                         refreshUI();
                         success = true;
@@ -331,6 +293,57 @@ public class HabitsController {
 
     // --- HELPER METHODS ---
 
+    private ContextMenu createContextMenu(int habitId, String currentName) {
+        ContextMenu menu = new ContextMenu();
+
+        MenuItem rename = new MenuItem("Rename");
+        rename.setOnAction(e -> renameHabit(habitId, currentName));
+
+        MenuItem archive = new MenuItem("Archive");
+        archive.setOnAction(e -> archiveHabit(habitId));
+
+        MenuItem delete = new MenuItem("Delete Permanently");
+        delete.setStyle("-fx-text-fill: red;");
+        delete.setOnAction(e -> deleteHabit(habitId));
+
+        menu.getItems().addAll(rename, archive, new SeparatorMenuItem(), delete);
+        return menu;
+    }
+
+    private void renameHabit(int habitId, String currentName) {
+        TextInputDialog dialog = new TextInputDialog(currentName);
+        dialog.setTitle("Rename Habit");
+        dialog.setHeaderText(null);
+        dialog.setContentText("Enter new name:");
+        dialog.showAndWait().ifPresent(newName -> {
+            if (!newName.trim().isEmpty() && !newName.equals(currentName)) {
+                HabitService.updateHabitName(habitId, newName.trim());
+                refreshUI();
+            }
+        });
+    }
+
+    private void archiveHabit(int habitId) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Archive this habit? It will be hidden from the list.", ButtonType.YES, ButtonType.NO);
+        alert.showAndWait().ifPresent(type -> {
+            if (type == ButtonType.YES) {
+                HabitService.markHabitCompleted(habitId); // Sets status to 'COMPLETED' (Archived)
+                refreshUI();
+            }
+        });
+    }
+
+    private void deleteHabit(int habitId) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Delete this habit permanently? All history will be lost.", ButtonType.YES, ButtonType.NO);
+        alert.setHeaderText("Danger Zone");
+        alert.showAndWait().ifPresent(type -> {
+            if (type == ButtonType.YES) {
+                HabitService.deleteHabit(habitId);
+                refreshUI();
+            }
+        });
+    }
+
     @FXML
     private void onAddHabit() {
         TextInputDialog dialog = new TextInputDialog();
@@ -346,16 +359,6 @@ public class HabitsController {
         });
     }
 
-    private void archiveHabit(int habitId) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Archive this habit?", ButtonType.YES, ButtonType.NO);
-        alert.showAndWait().ifPresent(type -> {
-            if (type == ButtonType.YES) {
-                HabitService.markHabitCompleted(habitId);
-                refreshUI();
-            }
-        });
-    }
-
     private StackPane createTodayBox(int habitId, boolean initiallyCompleted) {
         StackPane box = createEmptyBox();
         int todayCol = LocalDate.now().getDayOfMonth();
@@ -366,7 +369,6 @@ public class HabitsController {
             addCheckMark(box);
         }
 
-        // Hover listeners
         box.setOnMouseEntered(e -> applyColumnHover(todayCol, true));
         box.setOnMouseExited(e -> applyColumnHover(todayCol, false));
 
@@ -423,7 +425,7 @@ public class HabitsController {
     }
 
     private void refreshTotals() {
-        if (isCardView) return; // Totals not shown in card view
+        if (isCardView) return;
 
         int today = LocalDate.now().getDayOfMonth();
         Node n = getNodeAt(today, habitRowMap.size() + 1);
@@ -457,7 +459,6 @@ public class HabitsController {
 
     private void applyColumnHover(int colIndex, boolean isHovered) {
         double scale = isHovered ? 1.1 : 1.0;
-        // Avoid ConcurrentModificationException by copying list
         List<Node> childrenCopy = new ArrayList<>(habitGrid.getChildren());
 
         for (Node node : childrenCopy) {
@@ -477,20 +478,15 @@ public class HabitsController {
         int counter = 0;
         for (Node node : habitGrid.getChildren()) {
             node.setOpacity(0.0);
-
-            // Fade in
             FadeTransition fade = new FadeTransition(animDuration, node);
             fade.setToValue(1.0);
-
-            // Gentle slide up
             TranslateTransition slide = new TranslateTransition(animDuration, node);
             slide.setFromY(20);
             slide.setToY(0);
 
             ParallelTransition itemAnim = new ParallelTransition(node, fade, slide);
-            itemAnim.setDelay(Duration.millis(counter * 20)); // Staggered
+            itemAnim.setDelay(Duration.millis(counter * 20));
             masterParallel.getChildren().add(itemAnim);
-
             counter++;
         }
         masterParallel.play();
