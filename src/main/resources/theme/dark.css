@@ -1,0 +1,241 @@
+/* ===== ROOT & GLOBAL (DARK) ===== */
+.app-root {
+    -fx-background-color: #121212;
+    -fx-accent: #6C63FF;
+}
+
+.label {
+    -fx-text-fill: #e0e0e0;
+}
+
+/* ===== TOP BAR (DARK) ===== */
+.top-bar {
+    -fx-background-color: #1e1e1e;
+    -fx-padding: 8 15;
+    -fx-border-color: #333333;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+    -fx-background-color: #1e1e1e;
+    -fx-padding: 20;
+    -fx-spacing: 15;
+    -fx-border-color: #333333;
+    -fx-border-width: 0 1 0 0;
+}
+
+.sidebar-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 20 0;
+}
+
+.sidebar-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #b0b0b0;
+    -fx-font-size: 14px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 10 15;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.sidebar-button:hover {
+    -fx-background-color: #333333;
+    -fx-text-fill: #6C63FF;
+}
+
+/* ===== CONTENT AREA ===== */
+.content-area {
+    -fx-background-color: transparent;
+    -fx-padding: 30;
+}
+
+.page-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #ffffff;
+}
+
+/* ===== STATS CARDS ===== */
+.card {
+    -fx-background-color: #1e1e1e;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 5);
+    -fx-padding: 20;
+}
+
+.stat-label {
+    -fx-text-fill: #a0a0a0;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-letter-spacing: 1px;
+}
+
+.stat-value {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+}
+
+/* ===== HABIT CARDS (Dark Mode) ===== */
+.habit-card {
+    -fx-background-color: #2d2d2d;
+    -fx-background-radius: 15;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 5);
+}
+
+.habit-card-title {
+    -fx-text-fill: #e0e0e0;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+}
+
+.habit-card-status {
+    -fx-text-fill: #aaaaaa;
+    -fx-font-size: 12px;
+}
+
+.habit-card-button {
+    -fx-background-color: #3d3d3d;
+    -fx-text-fill: #aaaaaa;
+    -fx-background-radius: 20;
+    -fx-cursor: hand;
+}
+
+/* COMPLETED STATE (Dark Mode) */
+.habit-card.completed {
+    -fx-background-color: linear-gradient(to bottom right, #6C63FF, #483d8b);
+}
+.habit-card.completed .habit-card-title { -fx-text-fill: white; }
+.habit-card.completed .habit-card-status { -fx-text-fill: #cccccc; }
+.habit-card.completed .habit-card-button {
+    -fx-background-color: white;
+    -fx-text-fill: #6C63FF;
+    -fx-font-weight: bold;
+}
+
+/* ===== READING ROOM ===== */
+.book-item-container {
+    -fx-background-color: #1e1e1e;
+    -fx-background-radius: 10;
+    -fx-border-color: #333333;
+    -fx-border-width: 1;
+    -fx-padding: 15;
+    -fx-transition: all 0.3s ease;
+}
+
+.book-item-container:hover {
+    -fx-border-color: #6C63FF;
+    -fx-effect: dropshadow(three-pass-box, rgba(108, 99, 255, 0.2), 10, 0, 0, 0);
+}
+
+.reading-progress-text {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6C63FF;
+    -fx-font-weight: bold;
+}
+
+.progress-bar { -fx-background-color: #2d2d2d; -fx-background-radius: 10; -fx-padding: 0; }
+.progress-bar .track { -fx-background-color: #2d2d2d; -fx-background-radius: 10; }
+.progress-bar .bar { -fx-background-color: #6C63FF; -fx-background-radius: 10; }
+
+/* ===== HABIT GRID ===== */
+.habit-cell {
+    -fx-border-color: #333333;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-alignment: CENTER;
+}
+
+.today-column-cell {
+    -fx-border-color: #6C63FF;
+    -fx-border-width: 2.5;
+    -fx-border-radius: 4;
+    -fx-background-color: transparent;
+}
+
+.completed-today {
+    -fx-background-color: rgba(108, 99, 255, 0.15);
+}
+
+/* ===== COMBO BOX / DROPDOWN FIX (Dark Mode) ===== */
+.combo-box-popup .list-view {
+    -fx-background-color: #2d2d2d; /* Dark Background */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 10, 0, 0, 4);
+}
+
+.combo-box-popup .list-cell {
+    -fx-background-color: #2d2d2d; /* Match background */
+    -fx-text-fill: #e0e0e0;       /* Light Text */
+    -fx-padding: 8 12;
+}
+
+.combo-box-popup .list-cell:filled:hover {
+    -fx-background-color: #3d3d3d; /* Lighter Dark for Hover */
+    -fx-text-fill: #6C63FF;
+}
+
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: #3d3d3d;
+    -fx-text-fill: #6C63FF;
+    -fx-font-weight: bold;
+}
+
+/* Fix the Arrow Icon Color in the Dropdown Button */
+.month-selector .arrow, .combo-box .arrow {
+    -fx-background-color: #e0e0e0;
+}
+.month-selector .arrow-button, .combo-box .arrow-button {
+    -fx-background-color: transparent;
+}
+
+/* ===== INPUTS ===== */
+.month-selector, .text-field {
+    -fx-background-color: #2d2d2d;
+    -fx-border-color: #333333;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 12;
+    -fx-text-fill: #ffffff;
+}
+
+.text-field:focused {
+    -fx-border-color: #6C63FF;
+    -fx-background-color: #1e1e1e;
+}
+
+/* ===== LIST VIEW CLEANUP ===== */
+.list-view {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+.list-cell {
+    -fx-text-fill: #e0e0e0; /* Default List Text Color */
+}
+
+/* ===== NAAM JAP SECTION (Dark Mode) ===== */
+.jap-total-label {
+    -fx-font-size: 32px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #ffffff; /* White text */
+}
+
+.jap-list-cell {
+    -fx-background-color: #2d2d2d; /* Dark cell background */
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 2);
+}
+
+.jap-date-label {
+    -fx-text-fill: #aaaaaa; /* Light gray text */
+    -fx-font-weight: bold;
+}
+
+.jap-count-label {
+    -fx-text-fill: #6C63FF; /* Keep accent color */
+    -fx-font-weight: 800;
+}

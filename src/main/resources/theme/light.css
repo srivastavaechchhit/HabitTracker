@@ -9,6 +9,14 @@
     -fx-text-fill: #2d3436;
 }
 
+/* ===== TOP BAR (NEW) ===== */
+.top-bar {
+    -fx-background-color: #f8f9fa;
+    -fx-padding: 8 15;
+    -fx-border-color: #e9ecef;
+    -fx-border-width: 0 0 1 0;
+}
+
 /* ===== SIDEBAR ===== */
 .sidebar {
     -fx-background-color: #ffffff;
@@ -52,11 +60,10 @@
     -fx-text-fill: #1a1a1a;
 }
 
-/* ===== MODERN CARD SYSTEM ===== */
+/* ===== MODERN CARD SYSTEM (STATS) ===== */
 .card {
     -fx-background-color: #ffffff;
     -fx-background-radius: 12;
-    /* Professional subtle drop shadow */
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);
     -fx-padding: 20;
 }
@@ -74,7 +81,44 @@
     -fx-text-fill: #1a1a1a;
 }
 
-/* ===== READING ROOM SPECIFIC STYLES ===== */
+/* ===== HABIT CARDS (Light Mode) - NEW ===== */
+.habit-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 15;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+}
+
+.habit-card-title {
+    -fx-text-fill: #333333;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+}
+
+.habit-card-status {
+    -fx-text-fill: #888888;
+    -fx-font-size: 12px;
+}
+
+.habit-card-button {
+    -fx-background-color: #f0f0f0;
+    -fx-text-fill: #666666;
+    -fx-background-radius: 20;
+    -fx-cursor: hand;
+}
+
+/* COMPLETED STATE (Light Mode) */
+.habit-card.completed {
+    -fx-background-color: linear-gradient(to bottom right, #6C63FF, #5a52d5);
+}
+.habit-card.completed .habit-card-title { -fx-text-fill: white; }
+.habit-card.completed .habit-card-status { -fx-text-fill: #e0e0e0; }
+.habit-card.completed .habit-card-button {
+    -fx-background-color: white;
+    -fx-text-fill: #6C63FF;
+    -fx-font-weight: bold;
+}
+
+/* ===== READING ROOM STYLES ===== */
 .book-item-container {
     -fx-background-color: #ffffff;
     -fx-background-radius: 10;
@@ -95,22 +139,9 @@
     -fx-font-weight: bold;
 }
 
-/* Custom Progress Bar Styling */
-.progress-bar {
-    -fx-background-color: #f1f3f5;
-    -fx-background-radius: 10;
-    -fx-padding: 0;
-}
-
-.progress-bar .track {
-    -fx-background-color: #f1f3f5;
-    -fx-background-radius: 10;
-}
-
-.progress-bar .bar {
-    -fx-background-color: #6C63FF;
-    -fx-background-radius: 10;
-}
+.progress-bar { -fx-background-color: #f1f3f5; -fx-background-radius: 10; -fx-padding: 0; }
+.progress-bar .track { -fx-background-color: #f1f3f5; -fx-background-radius: 10; }
+.progress-bar .bar { -fx-background-color: #6C63FF; -fx-background-radius: 10; }
 
 /* ===== HABIT GRID STYLES ===== */
 .habit-cell {
@@ -131,7 +162,7 @@
     -fx-background-color: rgba(108, 99, 255, 0.05);
 }
 
-/* ===== LIST VIEW CLEANUP ===== */
+/* ===== LIST VIEW & COMBO BOX FIX ===== */
 .list-view {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
@@ -142,12 +173,28 @@
     -fx-padding: 5 0;
 }
 
-.list-cell:filled:hover {
-    -fx-background-color: transparent;
+/* Combo Box Dropdown */
+.combo-box-popup .list-view {
+    -fx-background-color: #ffffff;
+    -fx-background-insets: 0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 10, 0, 0, 4);
 }
 
-.list-cell:filled:selected {
-    -fx-background-color: transparent;
+.combo-box-popup .list-cell {
+    -fx-padding: 8 12;
+    -fx-text-fill: #333333;
+}
+
+.combo-box-popup .list-cell:filled:hover {
+    -fx-background-color: #f1f3f5;
+    -fx-text-fill: #6C63FF;
+    -fx-cursor: hand;
+}
+
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: #eef2ff;
+    -fx-text-fill: #6C63FF;
+    -fx-font-weight: bold;
 }
 
 /* ===== INPUT STYLES ===== */
@@ -164,26 +211,26 @@
     -fx-background-color: #ffffff;
 }
 
-/* ===== COMBO BOX / DROPDOWN FIX ===== */
-.combo-box-popup .list-view {
-    -fx-background-color: #ffffff; /* Solid white background */
-    -fx-background-insets: 0;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 10, 0, 0, 4); /* Shadow for depth */
+/* ===== NAAM JAP SECTION (Light Mode) ===== */
+.jap-total-label {
+    -fx-font-size: 32px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #1a1a1a;
 }
 
-.combo-box-popup .list-cell {
-    -fx-padding: 8 12;
-    -fx-text-fill: #333333;
+.jap-list-cell {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 8;
+    -fx-padding: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);
 }
 
-.combo-box-popup .list-cell:filled:hover {
-    -fx-background-color: #f1f3f5; /* Light gray on hover */
-    -fx-text-fill: #6C63FF;
-    -fx-cursor: hand;
-}
-
-.combo-box-popup .list-cell:filled:selected {
-    -fx-background-color: #eef2ff; /* Light purple for selected item */
-    -fx-text-fill: #6C63FF;
+.jap-date-label {
+    -fx-text-fill: #888888;
     -fx-font-weight: bold;
+}
+
+.jap-count-label {
+    -fx-text-fill: #6C63FF;
+    -fx-font-weight: 800;
 }

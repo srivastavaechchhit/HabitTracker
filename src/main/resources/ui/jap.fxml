@@ -10,17 +10,16 @@
 
     <VBox spacing="5">
         <Label text="Naam Jap" styleClass="page-title"/>
-        <Label text="Track your daily spiritual progress" style="-fx-text-fill: #888; -fx-font-size: 14;"/>
+        <Label text="Track your daily spiritual progress" styleClass="stat-label"/>
     </VBox>
 
     <HBox spacing="30" VBox.vgrow="ALWAYS">
 
         <VBox spacing="20" prefWidth="380" maxWidth="380">
 
-            <VBox spacing="5" alignment="CENTER" styleClass="card" style="-fx-background-color: #f8f9fa;">
-                <Label text="TOTAL CHANTS TILL NOW" styleClass="stat-label" style="-fx-text-fill: #666;"/>
-                <Label fx:id="totalChantsLabel" text="0"
-                       style="-fx-font-size: 32; -fx-font-weight: 900; -fx-text-fill: #1a1a1a;"/>
+            <VBox spacing="5" alignment="CENTER" styleClass="card">
+                <Label text="TOTAL CHANTS TILL NOW" styleClass="stat-label"/>
+                <Label fx:id="totalChantsLabel" text="0" styleClass="jap-total-label"/>
             </VBox>
 
             <VBox spacing="25" styleClass="card" alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
@@ -37,13 +36,13 @@
 
                 <Region VBox.vgrow="ALWAYS" />
 
-                <Label text="Maximum limit: 100,000 per day" style="-fx-text-fill: #aaa; -fx-font-size: 11;"/>
+                <Label text="Maximum limit: 100,000 per day" styleClass="stat-label"/>
             </VBox>
         </VBox>
 
         <VBox spacing="15" styleClass="card" HBox.hgrow="ALWAYS">
             <Label text="HISTORY LOGS" styleClass="stat-label"/>
-            <Label text="Right-click an entry to delete" style="-fx-text-fill: #aaa; -fx-font-size: 11;"/>
+            <Label text="Right-click an entry to delete" styleClass="stat-label"/>
 
             <ListView fx:id="japHistoryList" VBox.vgrow="ALWAYS"
                       style="-fx-background-color: transparent; -fx-background-insets: 0; -fx-padding: 5; -fx-selection-bar: transparent; -fx-control-inner-background: transparent;"/>

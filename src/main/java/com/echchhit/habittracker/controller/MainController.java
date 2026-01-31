@@ -3,23 +3,26 @@ package com.echchhit.habittracker.controller;
 import com.echchhit.habittracker.service.JapService;
 import javafx.animation.*;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
-import javafx.fxml.FXMLLoader;
 
 public class MainController {
 
     @FXML private StackPane contentPane;
     @FXML private VBox chantOverlay;
     @FXML private BorderPane mainLayout;
-
-    // 1. Added reference to the maximize button
     @FXML private Button maxBtn;
+
+    // NEW: Theme Button & State
+    @FXML private Button themeBtn;
+    private boolean isDarkMode = false;
 
     @FXML
     public void initialize() {
@@ -27,6 +30,24 @@ public class MainController {
         mainLayout.setScaleX(0.92);
         mainLayout.setScaleY(0.92);
         loadPage("/ui/dashboard.fxml");
+    }
+
+    // NEW: Toggle Theme Method
+    @FXML
+    private void toggleTheme() {
+        isDarkMode = !isDarkMode;
+        if (themeBtn == null || themeBtn.getScene() == null) return;
+
+        Scene scene = themeBtn.getScene();
+        scene.getStylesheets().clear();
+
+        if (isDarkMode) {
+            scene.getStylesheets().add(getClass().getResource("/theme/dark.css").toExternalForm());
+            themeBtn.setText("☀");
+        } else {
+            scene.getStylesheets().add(getClass().getResource("/theme/light.css").toExternalForm());
+            themeBtn.setText("🌙");
+        }
     }
 
     @FXML
@@ -92,15 +113,11 @@ public class MainController {
     @FXML
     private void maximizeApp(javafx.event.ActionEvent event) {
         javafx.stage.Stage stage = (javafx.stage.Stage)((javafx.scene.Node)event.getSource()).getScene().getWindow();
-
-        // Toggle the window state
         stage.setMaximized(!stage.isMaximized());
-
-        // 2. Update the button text based on the NEW state
         if (stage.isMaximized()) {
-            maxBtn.setText("❐"); // Shows the "Restore" symbol
+            maxBtn.setText("❐");
         } else {
-            maxBtn.setText("☐"); // Shows the "Maximize" symbol
+            maxBtn.setText("☐");
         }
     }
 

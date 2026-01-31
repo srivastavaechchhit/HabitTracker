@@ -17,10 +17,9 @@ public class JapController {
 
     @FXML
     public void initialize() {
-        // Link the ObservableList to the ListView
         japHistoryList.setItems(historyData);
 
-        // Custom Cell Factory for a modern look and Deletion feature
+        // Updated Cell Factory using CSS Classes
         japHistoryList.setCellFactory(lv -> {
             ListCell<String> cell = new ListCell<String>() {
                 @Override
@@ -30,38 +29,42 @@ public class JapController {
                         setGraphic(null);
                         setText(null);
                         setContextMenu(null);
+                        setStyle("-fx-background-color: transparent"); // Clear background for empty cells
                     } else {
-                        // Safety check for the "Date : Count Chants" format
                         if (!item.contains(" : ")) {
                             setText(item);
                             setGraphic(null);
                         } else {
                             String[] parts = item.split(" : ");
 
-                            // UI elements for the list row
+                            // 1. Date Label (Use CSS Class)
                             Label dateLabel = new Label(parts[0]);
-                            dateLabel.setStyle("-fx-text-fill: #888; -fx-font-weight: bold;");
+                            dateLabel.getStyleClass().add("jap-date-label");
 
+                            // 2. Count Label (Use CSS Class)
                             Label countLabel = new Label(parts[1]);
-                            countLabel.setStyle("-fx-text-fill: #6C63FF; -fx-font-weight: 800;");
+                            countLabel.getStyleClass().add("jap-count-label");
 
                             Region spacer = new Region();
                             HBox.setHgrow(spacer, Priority.ALWAYS);
 
+                            // 3. Container (Use CSS Class)
                             HBox container = new HBox(dateLabel, spacer, countLabel);
                             container.setAlignment(Pos.CENTER_LEFT);
-                            container.setStyle("-fx-padding: 10; -fx-background-color: white; -fx-background-radius: 5;");
+                            container.getStyleClass().add("jap-list-cell");
 
                             setGraphic(container);
                             setText(null);
 
-                            // Create Context Menu for Deletion
+                            // Ensure the cell background itself is transparent so the container shows
+                            setStyle("-fx-background-color: transparent; -fx-padding: 5 0;");
+
+                            // Context Menu
                             ContextMenu contextMenu = new ContextMenu();
                             MenuItem deleteItem = new MenuItem("Delete Entry");
                             deleteItem.setOnAction(event -> {
-                                JapService.deleteJapLog(parts[0]); // Delete by date
+                                JapService.deleteJapLog(parts[0]);
                                 refreshDisplay();
-                                // Reset today's field if the deleted entry was for today
                                 if (parts[0].equals(java.time.LocalDate.now().toString())) {
                                     countField.setText("0");
                                 }
@@ -82,7 +85,6 @@ public class JapController {
     private void handleUpdate() {
         try {
             int val = Integer.parseInt(countField.getText().trim());
-            // Validating the 100,000 limit
             if (val >= 0 && val <= 100000) {
                 JapService.updateJapCount(val);
                 refreshDisplay();
@@ -94,17 +96,9 @@ public class JapController {
         }
     }
 
-    /**
-     * Synchronizes all UI components with the latest data from the database.
-     */
     private void refreshDisplay() {
-        // Update lifetime total with formatting
         totalChantsLabel.setText(String.format("%,d", JapService.getTotalChants()));
-
-        // Update today's entry field
         countField.setText(String.valueOf(JapService.getTodayCount()));
-
-        // Update the history list
         historyData.clear();
         historyData.addAll(JapService.getAllJapLogs());
     }

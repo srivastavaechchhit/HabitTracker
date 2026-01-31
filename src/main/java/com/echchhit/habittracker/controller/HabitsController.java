@@ -109,24 +109,25 @@ public class HabitsController {
         card.setAlignment(Pos.CENTER);
         card.setPadding(new javafx.geometry.Insets(20));
 
-        String baseStyle = "-fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);";
-        String bgStyle = isCompleted
-                ? "-fx-background-color: linear-gradient(to bottom right, #6C63FF, #5a52d5);"
-                : "-fx-background-color: white;";
-        card.setStyle(baseStyle + bgStyle);
+        // 1. CLEAR OLD STYLES & ADD CSS CLASSES
+        card.getStyleClass().clear();
+        card.getStyleClass().add("habit-card");
+        if (isCompleted) {
+            card.getStyleClass().add("completed");
+        }
 
+        // 2. HABIT NAME
         Label nameLbl = new Label(name);
         nameLbl.setWrapText(true);
-        nameLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; " +
-                (isCompleted ? "-fx-text-fill: white;" : "-fx-text-fill: #333;"));
+        nameLbl.getStyleClass().add("habit-card-title");
 
+        // 3. STATUS LABEL
         Label statusLbl = new Label(isCompleted ? "Completed Today!" : "Not done yet");
-        statusLbl.setStyle("-fx-font-size: 12px; " + (isCompleted ? "-fx-text-fill: #e0e0e0;" : "-fx-text-fill: #888;"));
+        statusLbl.getStyleClass().add("habit-card-status");
 
+        // 4. ACTION BUTTON
         Button actionBtn = new Button(isCompleted ? "✓" : "Mark Done");
-        actionBtn.setStyle(isCompleted
-                ? "-fx-background-color: white; -fx-text-fill: #6C63FF; -fx-background-radius: 20; -fx-font-weight: bold;"
-                : "-fx-background-color: #f0f0f0; -fx-text-fill: #666; -fx-background-radius: 20;");
+        actionBtn.getStyleClass().add("habit-card-button");
         actionBtn.setCursor(Cursor.HAND);
 
         actionBtn.setOnAction(e -> {
@@ -144,6 +145,7 @@ public class HabitsController {
 
         card.getChildren().addAll(nameLbl, statusLbl, actionBtn);
 
+        // Hover Scale Effect
         card.setOnMouseEntered(e -> { card.setScaleX(1.03); card.setScaleY(1.03); });
         card.setOnMouseExited(e -> { card.setScaleX(1.0); card.setScaleY(1.0); });
 
@@ -327,7 +329,7 @@ public class HabitsController {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Archive this habit? It will be hidden from the list.", ButtonType.YES, ButtonType.NO);
         alert.showAndWait().ifPresent(type -> {
             if (type == ButtonType.YES) {
-                HabitService.markHabitCompleted(habitId); // Sets status to 'COMPLETED' (Archived)
+                HabitService.markHabitCompleted(habitId);
                 refreshUI();
             }
         });
