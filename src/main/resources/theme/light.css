@@ -163,3 +163,27 @@
     -fx-border-color: #6C63FF;
     -fx-background-color: #ffffff;
 }
+
+/* ===== COMBO BOX / DROPDOWN FIX ===== */
+.combo-box-popup .list-view {
+    -fx-background-color: #ffffff; /* Solid white background */
+    -fx-background-insets: 0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 10, 0, 0, 4); /* Shadow for depth */
+}
+
+.combo-box-popup .list-cell {
+    -fx-padding: 8 12;
+    -fx-text-fill: #333333;
+}
+
+.combo-box-popup .list-cell:filled:hover {
+    -fx-background-color: #f1f3f5; /* Light gray on hover */
+    -fx-text-fill: #6C63FF;
+    -fx-cursor: hand;
+}
+
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: #eef2ff; /* Light purple for selected item */
+    -fx-text-fill: #6C63FF;
+    -fx-font-weight: bold;
+}
