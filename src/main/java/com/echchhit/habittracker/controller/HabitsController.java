@@ -2,35 +2,33 @@ package com.echchhit.habittracker.controller;
 
 import com.echchhit.habittracker.service.HabitLogService;
 import com.echchhit.habittracker.service.HabitService;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.GridPane;
+import javafx.animation.*;
 import javafx.application.Platform;
-import javafx.scene.layout.HBox;
-import javafx.scene.control.*;
+import javafx.fxml.FXML;
+import javafx.geometry.Pos; // <--- Fixed "red line" under setAlignment
+import javafx.scene.Cursor;
+import javafx.scene.Node;
+import javafx.scene.control.*; // <--- Fixed "red line" under setStyle (Button/Label)
 import javafx.scene.input.*;
+import javafx.scene.layout.*;
 import javafx.util.Duration;
+
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.ArrayList;
-import javafx.geometry.Pos;
-import javafx.scene.Cursor;
-import javafx.animation.*;
-import java.util.HashMap;
-import javafx.scene.Node;
-import javafx.fxml.FXML;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class HabitsController {
 
     @FXML private GridPane habitGrid;
     @FXML private ComboBox<YearMonth> monthSelector;
+    @FXML private Button viewToggleBtn; // The button you added to FXML (⊞)
 
     private final Map<Integer, Integer> habitRowMap = new HashMap<>();
     private Map<Integer, String> dbHabits = new HashMap<>();
     private YearMonth selectedMonth = YearMonth.now();
+
+    // Track current view mode (False = Table/List, True = Card/Tiles)
+    private boolean isCardView = false;
 
     @FXML
     public void initialize() {
@@ -45,7 +43,10 @@ public class HabitsController {
             });
         }
 
+        // Load data
         dbHabits = HabitService.getAllHabitsWithIds();
+
+        // Auto-mark missed days
         LocalDate yesterday = LocalDate.now().minusDays(1);
         for (int id : dbHabits.keySet()) {
             HabitLogService.autoCrossIfMissed(id, yesterday);
@@ -53,90 +54,131 @@ public class HabitsController {
 
         refreshUI();
 
-        // Trigger the synchronized entrance animation every time the page loads
+        // Trigger entrance animation
         Platform.runLater(this::animateGridEntrySynchronized);
+    }
+
+    // --- VIEW TOGGLE LOGIC ---
+    @FXML
+    private void onToggleView() {
+        isCardView = !isCardView;
+        // Update Icon: ☰ for List, ⊞ for Cards
+        if (viewToggleBtn != null) {
+            viewToggleBtn.setText(isCardView ? "☰" : "⊞");
+        }
+        refreshUI();
+        animateGridEntrySynchronized();
     }
 
     private void refreshUI() {
         habitGrid.getChildren().clear();
         habitGrid.getColumnConstraints().clear();
+        habitGrid.getRowConstraints().clear();
 
-        // This fetches habits in the correct 'sort_order' thanks to your HabitService update
+        // Fetch fresh data (Sorted by sort_order)
         dbHabits = HabitService.getAllHabitsWithIds();
 
+        if (isCardView) {
+            renderCardView();
+        } else {
+            renderTableView();
+        }
+    }
+
+    // --- CARD VIEW RENDERING ---
+    private void renderCardView() {
+        // Layout: 3 Cards per row
+        int columns = 3;
+
+        // Define Column Constraints (33% each)
+        for(int i=0; i<columns; i++){
+            ColumnConstraints col = new ColumnConstraints();
+            col.setPercentWidth(100.0 / columns);
+            habitGrid.getColumnConstraints().add(col);
+        }
+
+        int index = 0;
+        LocalDate today = LocalDate.now();
+
+        for (Map.Entry<Integer, String> entry : dbHabits.entrySet()) {
+            int habitId = entry.getKey();
+            String name = entry.getValue();
+
+            int col = index % columns;
+            int row = index / columns;
+
+            // Check if completed today
+            boolean isCompleted = HabitLogService.getCompletedDatesForMonth(habitId, YearMonth.now()).contains(today);
+
+            // Create Card Node
+            Node card = createHabitCard(habitId, name, isCompleted);
+            habitGrid.add(card, col, row);
+
+            index++;
+        }
+    }
+
+    private Node createHabitCard(int habitId, String name, boolean isCompleted) {
+        VBox card = new VBox(10);
+        card.setAlignment(Pos.CENTER);
+        card.setPadding(new javafx.geometry.Insets(20));
+
+        // Dynamic Style based on completion
+        String baseStyle = "-fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);";
+        String bgStyle = isCompleted
+                ? "-fx-background-color: linear-gradient(to bottom right, #6C63FF, #5a52d5);" // Purple if done
+                : "-fx-background-color: white;";
+
+        card.setStyle(baseStyle + bgStyle);
+
+        // Habit Name
+        Label nameLbl = new Label(name);
+        nameLbl.setWrapText(true);
+        nameLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; " +
+                (isCompleted ? "-fx-text-fill: white;" : "-fx-text-fill: #333;"));
+
+        // Status Label
+        Label statusLbl = new Label(isCompleted ? "Completed Today!" : "Not done yet");
+        statusLbl.setStyle("-fx-font-size: 12px; " + (isCompleted ? "-fx-text-fill: #e0e0e0;" : "-fx-text-fill: #888;"));
+
+        // Action Button
+        Button actionBtn = new Button(isCompleted ? "✓" : "Mark Done");
+        actionBtn.setStyle(isCompleted
+                ? "-fx-background-color: white; -fx-text-fill: #6C63FF; -fx-background-radius: 20; -fx-font-weight: bold;"
+                : "-fx-background-color: #f0f0f0; -fx-text-fill: #666; -fx-background-radius: 20;");
+
+        actionBtn.setCursor(Cursor.HAND);
+
+        // Click Action
+        actionBtn.setOnAction(e -> {
+            if (isCompleted) {
+                HabitLogService.markMissed(habitId, LocalDate.now());
+            } else {
+                HabitLogService.markCompleted(habitId, LocalDate.now());
+            }
+            refreshUI(); // Re-render to update color/state
+        });
+
+        card.getChildren().addAll(nameLbl, statusLbl, actionBtn);
+
+        // Hover effect
+        card.setOnMouseEntered(e -> {
+            card.setScaleX(1.03);
+            card.setScaleY(1.03);
+        });
+        card.setOnMouseExited(e -> {
+            card.setScaleX(1.0);
+            card.setScaleY(1.0);
+        });
+
+        return card;
+    }
+
+    // --- TABLE (LIST) VIEW RENDERING ---
+    private void renderTableView() {
         buildDateHeader();
         addHabitRows();
         addBottomTotalRow();
-    }
-
-    private void animateGridEntrySynchronized() {
-        ParallelTransition masterParallel = new ParallelTransition();
-
-        double gridDelayFactor = 20.0; // Speed of diagonal reveal
-        double listDelayFactor = 40.0; // Stagger between habit names
-        Duration animDuration = Duration.millis(400); // Slightly longer for "settling" feel
-
-        // 1. ANIMATE GRID BOXES & HEADERS
-        for (Node node : habitGrid.getChildren()) {
-            Integer col = GridPane.getColumnIndex(node);
-            Integer row = GridPane.getRowIndex(node);
-            if (col == null) col = 0;
-            if (row == null) row = 0;
-
-            // Skip the first column (Habit Names) handled in step 2
-            if (col == 0) continue;
-
-            node.setOpacity(0.0);
-
-            // SPECIAL ANIMATION FOR DATE HEADERS (Row 0, Columns > 0)
-            if (row == 0 && col > 0) {
-                node.setScaleX(3.5); // Start big
-                node.setScaleY(3.5);
-
-                ScaleTransition settleScale = new ScaleTransition(animDuration, node);
-                settleScale.setToX(1.0);
-                settleScale.setToY(1.0);
-
-                FadeTransition fade = new FadeTransition(animDuration, node);
-                fade.setToValue(1.0);
-
-                ParallelTransition headerAnim = new ParallelTransition(node, settleScale, fade);
-                headerAnim.setDelay(Duration.millis(col * gridDelayFactor));
-                masterParallel.getChildren().add(headerAnim);
-            } else {
-                // Diagonal reveal for boxes and totals
-                FadeTransition fade = new FadeTransition(animDuration, node);
-                fade.setToValue(1.0);
-                fade.setDelay(Duration.millis((row + col) * gridDelayFactor));
-                masterParallel.getChildren().add(fade);
-            }
-        }
-
-        // 2. ANIMATE HABIT LIST (Staggered Slide-in)
-        int habitRowCounter = 0;
-        for (Node node : habitGrid.getChildren()) {
-            Integer col = GridPane.getColumnIndex(node);
-            Integer row = GridPane.getRowIndex(node);
-
-            if (col != null && col == 0 && row != null && row > 0) {
-                node.setOpacity(0.0);
-
-                TranslateTransition slide = new TranslateTransition(animDuration, node);
-                slide.setFromX(-30);
-                slide.setToX(0);
-
-                FadeTransition fade = new FadeTransition(animDuration, node);
-                fade.setToValue(1.0);
-
-                ParallelTransition combine = new ParallelTransition(node, slide, fade);
-                combine.setDelay(Duration.millis(habitRowCounter * listDelayFactor));
-
-                masterParallel.getChildren().add(combine);
-                habitRowCounter++;
-            }
-        }
-
-        masterParallel.play();
     }
 
     private void buildDateHeader() {
@@ -180,7 +222,7 @@ public class HabitsController {
         int daysInMonth = selectedMonth.lengthOfMonth();
         LocalDate today = LocalDate.now();
 
-        // 1. Get the current ordered list of IDs to help with index calculations
+        // Used for Drag & Drop logic
         List<Integer> currentOrder = new ArrayList<>(dbHabits.keySet());
 
         for (Map.Entry<Integer, String> entry : dbHabits.entrySet()) {
@@ -188,7 +230,7 @@ public class HabitsController {
             String name = entry.getValue();
             habitRowMap.put(habitId, rowIndex);
 
-            // --- DRAG HANDLE ---
+            // --- DRAG HANDLE (The "Equal To" Sign) ---
             Label dragHandle = new Label("≡");
             dragHandle.setStyle("-fx-font-size: 18px; -fx-text-fill: #aaa; -fx-padding: 0 8 0 0;");
             dragHandle.setCursor(Cursor.MOVE);
@@ -213,7 +255,7 @@ public class HabitsController {
 
             // --- DRAG EVENTS ---
 
-            // A. START DRAG (On the Handle only)
+            // A. START DRAG
             dragHandle.setOnDragDetected(event -> {
                 Dragboard db = dragHandle.startDragAndDrop(TransferMode.MOVE);
                 ClipboardContent content = new ClipboardContent();
@@ -222,7 +264,7 @@ public class HabitsController {
                 event.consume();
             });
 
-            // B. DRAG OVER (On the whole row name area)
+            // B. DRAG OVER
             nameContainer.setOnDragOver(event -> {
                 if (event.getGestureSource() != nameContainer && event.getDragboard().hasString()) {
                     event.acceptTransferModes(TransferMode.MOVE);
@@ -239,12 +281,12 @@ public class HabitsController {
                     int targetId = (int) nameContainer.getUserData();
 
                     if (sourceId != targetId) {
-                        // Reorder the local list
+                        // Reorder local list
                         currentOrder.remove(Integer.valueOf(sourceId));
                         int targetIndex = currentOrder.indexOf(targetId);
                         currentOrder.add(targetIndex, sourceId);
 
-                        // Save to DB and Refresh UI
+                        // Save to DB and Refresh
                         HabitService.updateHabitOrder(currentOrder);
                         refreshUI();
                         success = true;
@@ -276,56 +318,18 @@ public class HabitsController {
         }
     }
 
-    private StackPane createTodayBox(int habitId, boolean initiallyCompleted) {
-        StackPane box = createEmptyBox();
-        int todayCol = LocalDate.now().getDayOfMonth();
+    private void addBottomTotalRow() {
+        int bottomRow = habitRowMap.size() + 1;
+        Label totalLabel = new Label("TOTAL");
+        totalLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #888; -fx-font-size: 10px;");
+        habitGrid.add(totalLabel, 0, bottomRow);
 
-        box.getStyleClass().add("today-column-cell");
-        if (initiallyCompleted) {
-            box.getStyleClass().add("completed-today");
-            addCheckMark(box);
-        }
-
-        // Column-wide hover listeners
-        box.setOnMouseEntered(e -> applyColumnHover(todayCol, true));
-        box.setOnMouseExited(e -> applyColumnHover(todayCol, false));
-
-        box.setOnMouseClicked(e -> {
-            boolean isChecked = !box.getChildren().isEmpty();
-            LocalDate today = LocalDate.now();
-
-            if (isChecked) {
-                HabitLogService.markMissed(habitId, today);
-                box.getChildren().clear();
-                box.getStyleClass().remove("completed-today");
-            } else {
-                HabitLogService.markCompleted(habitId, today);
-                addCheckMark(box);
-                box.getStyleClass().add("completed-today");
-            }
-
-            refreshTotals();
-            refreshRowTotal(habitId, getHabitRow(habitId));
-        });
-
-        return box;
+        Label totalValue = new Label(String.valueOf(HabitLogService.getCompletedCountToday()));
+        totalValue.setStyle("-fx-font-weight: bold; -fx-text-fill: #6C63FF;");
+        habitGrid.add(new StackPane(totalValue), LocalDate.now().getDayOfMonth(), bottomRow);
     }
 
-    private void applyColumnHover(int colIndex, boolean isHovered) {
-        double scale = isHovered ? 1.1 : 1.0;
-        java.util.ArrayList<Node> childrenCopy = new java.util.ArrayList<>(habitGrid.getChildren());
-
-        for (Node node : childrenCopy) {
-            Integer c = GridPane.getColumnIndex(node);
-            if (c != null && c == colIndex) {
-                node.setScaleX(scale);
-                node.setScaleY(scale);
-                if (isHovered) {
-                    node.toFront();
-                }
-            }
-        }
-    }
+    // --- HELPER METHODS ---
 
     @FXML
     private void onAddHabit() {
@@ -342,6 +346,49 @@ public class HabitsController {
         });
     }
 
+    private void archiveHabit(int habitId) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Archive this habit?", ButtonType.YES, ButtonType.NO);
+        alert.showAndWait().ifPresent(type -> {
+            if (type == ButtonType.YES) {
+                HabitService.markHabitCompleted(habitId);
+                refreshUI();
+            }
+        });
+    }
+
+    private StackPane createTodayBox(int habitId, boolean initiallyCompleted) {
+        StackPane box = createEmptyBox();
+        int todayCol = LocalDate.now().getDayOfMonth();
+
+        box.getStyleClass().add("today-column-cell");
+        if (initiallyCompleted) {
+            box.getStyleClass().add("completed-today");
+            addCheckMark(box);
+        }
+
+        // Hover listeners
+        box.setOnMouseEntered(e -> applyColumnHover(todayCol, true));
+        box.setOnMouseExited(e -> applyColumnHover(todayCol, false));
+
+        box.setOnMouseClicked(e -> {
+            boolean isChecked = !box.getChildren().isEmpty();
+            LocalDate today = LocalDate.now();
+
+            if (isChecked) {
+                HabitLogService.markMissed(habitId, today);
+                box.getChildren().clear();
+                box.getStyleClass().remove("completed-today");
+            } else {
+                HabitLogService.markCompleted(habitId, today);
+                addCheckMark(box);
+                box.getStyleClass().add("completed-today");
+            }
+            refreshTotals();
+            refreshRowTotal(habitId, getHabitRow(habitId));
+        });
+        return box;
+    }
+
     private void addCheckMark(StackPane box) {
         Label check = new Label("✓");
         check.setStyle("-fx-text-fill: #4CAF50; -fx-font-size: 14px; -fx-font-weight: bold;");
@@ -350,17 +397,6 @@ public class HabitsController {
         st.setFromX(0.1); st.setFromY(0.1);
         st.setToX(1.0); st.setToY(1.0);
         st.play();
-    }
-
-    private void addBottomTotalRow() {
-        int bottomRow = habitRowMap.size() + 1;
-        Label totalLabel = new Label("TOTAL");
-        totalLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #888; -fx-font-size: 10px;");
-        habitGrid.add(totalLabel, 0, bottomRow);
-
-        Label totalValue = new Label(String.valueOf(HabitLogService.getCompletedCountToday()));
-        totalValue.setStyle("-fx-font-weight: bold; -fx-text-fill: #6C63FF;");
-        habitGrid.add(new StackPane(totalValue), LocalDate.now().getDayOfMonth(), bottomRow);
     }
 
     private StackPane createLockedBox(boolean completed) {
@@ -386,29 +422,23 @@ public class HabitsController {
         return box;
     }
 
-    private void archiveHabit(int habitId) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Archive this habit?", ButtonType.YES, ButtonType.NO);
-        alert.showAndWait().ifPresent(type -> {
-            if (type == ButtonType.YES) {
-                HabitService.markHabitCompleted(habitId);
-                refreshUI();
-            }
-        });
-    }
-
     private void refreshTotals() {
+        if (isCardView) return; // Totals not shown in card view
+
         int today = LocalDate.now().getDayOfMonth();
-        StackPane container = (StackPane) getNodeAt(today, habitRowMap.size() + 1);
-        if (container != null) {
-            ((Label)container.getChildren().get(0)).setText(String.valueOf(HabitLogService.getCompletedCountToday()));
+        Node n = getNodeAt(today, habitRowMap.size() + 1);
+        if (n instanceof StackPane sp && !sp.getChildren().isEmpty()) {
+            ((Label)sp.getChildren().get(0)).setText(String.valueOf(HabitLogService.getCompletedCountToday()));
         }
     }
 
     private void refreshRowTotal(int habitId, int row) {
+        if (isCardView) return;
+
         int count = HabitLogService.getCompletedDatesForMonth(habitId, selectedMonth).size();
-        StackPane container = (StackPane) getNodeAt(selectedMonth.lengthOfMonth() + 1, row);
-        if (container != null) {
-            ((Label)container.getChildren().get(0)).setText(String.valueOf(count));
+        Node n = getNodeAt(selectedMonth.lengthOfMonth() + 1, row);
+        if (n instanceof StackPane sp && !sp.getChildren().isEmpty()) {
+            ((Label)sp.getChildren().get(0)).setText(String.valueOf(count));
         }
     }
 
@@ -423,5 +453,46 @@ public class HabitsController {
 
     private int getHabitRow(int habitId) {
         return habitRowMap.getOrDefault(habitId, -1);
+    }
+
+    private void applyColumnHover(int colIndex, boolean isHovered) {
+        double scale = isHovered ? 1.1 : 1.0;
+        // Avoid ConcurrentModificationException by copying list
+        List<Node> childrenCopy = new ArrayList<>(habitGrid.getChildren());
+
+        for (Node node : childrenCopy) {
+            Integer c = GridPane.getColumnIndex(node);
+            if (c != null && c == colIndex) {
+                node.setScaleX(scale);
+                node.setScaleY(scale);
+                if (isHovered) node.toFront();
+            }
+        }
+    }
+
+    private void animateGridEntrySynchronized() {
+        ParallelTransition masterParallel = new ParallelTransition();
+        Duration animDuration = Duration.millis(400);
+
+        int counter = 0;
+        for (Node node : habitGrid.getChildren()) {
+            node.setOpacity(0.0);
+
+            // Fade in
+            FadeTransition fade = new FadeTransition(animDuration, node);
+            fade.setToValue(1.0);
+
+            // Gentle slide up
+            TranslateTransition slide = new TranslateTransition(animDuration, node);
+            slide.setFromY(20);
+            slide.setToY(0);
+
+            ParallelTransition itemAnim = new ParallelTransition(node, fade, slide);
+            itemAnim.setDelay(Duration.millis(counter * 20)); // Staggered
+            masterParallel.getChildren().add(itemAnim);
+
+            counter++;
+        }
+        masterParallel.play();
     }
 }
